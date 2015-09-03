@@ -15,7 +15,9 @@ LL(n, s).
 
 Example
 -------
-h0 = Background(2.5, 3.12, 15
+h0 = Background(2.5, 3.12, 15)
+h0.LL(n, s), where n = number of shared segments and
+                   s = the set of shared segments
 
 Notes
 -----
@@ -37,7 +39,7 @@ class Background:
     def __init__(self, t, theta, lambda_):
         self.t = t
         self.theta = theta
-        self.mu = lambda_
+        self.lambda_ = lambda_
 
     def _Fp(self, i):
         assert(i > self.t)
@@ -50,7 +52,7 @@ class Background:
         return result
 
     def _Np(self, n):
-        return poisson.pmf(n, self.mu)
+        return poisson.pmf(n, self.lambda_)
 
     def L(self, n, s):
         return self._Np(n) * self._Sp(s)
@@ -60,6 +62,59 @@ class Background:
         ret += log(self._Np(n))
         ret += log(self._Sp(s))
         return ret
+
+
+"""
+Class Relation
+--------------
+Represents the alternative hypothesis, Lr
+
+Created with .....
+
+Provides ...
+
+Example
+-------
+....
+
+Notes
+-----
+Lr = La(na, sa | d, a, t) * Lp(np, sp | t)
+
+    Lp = null hypothesis
+    La(na, sa | d, a, t) = Na(n | d, a, t) * Sa(sa | d, t)
+    Sa(s | d, t) = product over i in s of Fa(i | t)
+    Fa(i | d, t) = (e^(-d(i-t)/100)) / (100/d0)
+    Na(n | d, a, t) = <eq. 8 in Huff et. al. 2011>
+
+    r ~= 35.3 (empirical)
+    c = 22 (empirical)
+"""
+class Relation(Background):
+    def __init__(self, c, r, t, theta, lambda_):
+        super(Relation, self).__init__(t, theta, lambda_)
+        self.c = c
+        self.r = r
+        self.a = 2  # see Huff et al 2011 supplemental material
+
+    def _Fa(self, i, d):
+        return exp(-d * (i - self.t) / 100) / (100 / d)
+
+    def _Sa(self, s, d):
+        result = 1
+        for i in s:
+            result *= self._Fa(i, d)
+        return result
+
+    def _p(self, d):
+        return exp((-d * self.t) / 100)
+
+    def _Na(self, n, d):
+        lambda_ = (-self.a * (self.r * d + self.c) * self._p(d)) / (2 ** (d - 1))
+        return poisson.pmf(n, lambda_)
+
+    def _La(self, na, sa, d):
+        return self._Na(na, d) * self._Sa(sa, d)  # changed n on RHS of eq. 5 to na
 
 
 def main():
