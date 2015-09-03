@@ -7,26 +7,26 @@ Class SharedSegment
 Stores named values for a matchfile line, see "Output" from
 http://www1.cs.columbia.edu/~gusev/germline/
 
-Assumes that each value in the parameter list
+Assumes that each value in the inputed parameter list
 is a string.
 """
 class SharedSegment:
     def __init__(self, parameterList):
-        self.familyID1 = parameterList[0]
+        self.familyID1 = int(parameterList[0])
         self.indivID1 = parameterList[1]
-        self.familyID2 = parameterList[2]
+        self.familyID2 = int(parameterList[2])
         self.indivID2 = parameterList[3]
-        self.chrom = parameterList[4]
-        self.bpStart = parameterList[5]
-        self.bpEnd = parameterList[6]
+        self.chrom = int(parameterList[4])
+        self.bpStart = int(parameterList[5])
+        self.bpEnd = int(parameterList[6])
         self.snpStart = parameterList[7]
         self.snpEnd = parameterList[8]
-        self.totalSNP = parameterList[9]
-        self.length = parameterList[10]
+        self.totalSNP = int(parameterList[9])
+        self.length = float(parameterList[10])
         self.lengthUnit = parameterList[11]
-        self.mismatchSNP = parameterList[12]
-        self.ind1homozygous = parameterList[13]
-        self.ind2homozygous = parameterList[14]
+        self.mismatchSNP = int(parameterList[12])
+        self.ind1homozygous = int(parameterList[13])
+        self.ind2homozygous = int(parameterList[14])
 
 
 def read_matchfile(path):
@@ -73,7 +73,7 @@ def get_pair_dict(path):
 def main():
     paired_data = get_pair_dict("../test_data/generated.match")
     for k, v in paired_data.items():
-        print("paird_id: {}\t(n, s): {}".format(k, v))
+        print("pair_id: {}\t(n, s): {}".format(k, v))
 
 
 if __name__ == '__main__':
