@@ -6,18 +6,23 @@ import pylab as pl
 
 """
 Class Background
---------------
+----------------
 Represents the null hypothesis, Lp.
 
-Created with empirical parameters, t, theta, lambba_. Provides
-the likelihood function, L(n, s), and log-likelihood function,
-LL(n, s).
+Created with empirical parameters, t, theta, lambba_.
+
+Provides the likelihood function, L(n, s), and log-likelihood
+function, LL(n, s).
+
 
 Example
 -------
+n = 5                  # number of shared segments
+s = [3, 5, 4, 9, 4.5]  # list of shared segment lengths
+
 h0 = Background(2.5, 3.12, 15)
-h0.LL(n, s), where n = number of shared segments and
-                   s = the set of shared segments
+h0.LL(n, s)
+
 
 Notes
 -----
@@ -28,12 +33,14 @@ Lp(n,s|t) = Np(n|t) * Sp(s|t)
     Sp(s|t) = Product over i in s of Fp(i|t)
     Fp(i|t) = (e^(i-t)/theta)/theta
 
-    t = 2.5 cM (empirical)
-    h = 10 cM (empirical)
-    lambda_ = the sample mean of the number of segments shared in the population (empirical)
-    theta = mean shared segment length in the population for
-            all segments of size >t and <ha, equal to 3.12 cM in
-            Huff et. al. 2011 (empirical)
+    n = number of shared segments
+    s = list of shared segment lengths (in cM)
+    t = minimum threshold for segment lengths (in cM)
+    h = maximum threshold for segment lengths (in cM)
+    lambda_ = the sample mean of the number of segments shared
+              in the population
+    theta = mean shared segment length (in cm) in the population
+            for all segments of size >t and <h
 """
 class Background:
     def __init__(self, t, theta, lambda_):
@@ -67,28 +74,51 @@ class Background:
 """
 Class Relation
 --------------
-Represents the alternative hypothesis, Lr
+Represents the alternative hypothesis, Lr.
 
-Created with .....
+Created with empirical parameters c, r, t, theta, and lambda_. The
+latter three parameters are described in Class Background.
 
-Provides ...
+Provides the a function returning the maximum log-likelihood over
+d and np, MLL(n, s)
+
 
 Example
 -------
-....
+n = 5                  # number of shared segments
+s = [3, 5, 4, 9, 4.5]  # list of shared segment lengths
+
+ha = Relation(22, 35.3, 2.5, 3.12, 14)
+ha.MLL(n, s)
+
 
 Notes
 -----
 Lr = La(na, sa | d, a, t) * Lp(np, sp | t)
 
-    Lp = null hypothesis
+    Lp = follows description of the null hypothesis (see
+         Class Background)
     La(na, sa | d, a, t) = Na(n | d, a, t) * Sa(sa | d, t)
     Sa(s | d, t) = product over i in s of Fa(i | t)
     Fa(i | d, t) = (e^(-d(i-t)/100)) / (100/d0)
     Na(n | d, a, t) = <eq. 8 in Huff et. al. 2011>
 
-    r ~= 35.3 (empirical)
-    c = 22 (empirical)
+    a = number of ancestors shared (set to 2 based on supp. mat.)
+    d = combined number of generations separating the individuals
+        from their ancestor(s)
+    n = number of shared segments
+    na = number of shared segments inherited from recent ancestors
+    np = number of shared segments shared due to the population background
+    s = list of shared segment lengths (in cM)
+    sa and sp = mutually exclusive subsets of s, with sa equal to a list
+                of segment lengths inherited from recent ancestors and
+                sp equal to a list of segment lengths shared due to the
+                background
+
+    r = expected number of recombination events per haploid genome
+        per generation
+    c = number of autosomes
+    p(t) = probability that a shared segment is longer than t
 """
 class Relation(Background):
     def __init__(self, c, r, t, theta, lambda_):
@@ -98,6 +128,7 @@ class Relation(Background):
         self.a = 2  # see Huff et al 2011 supplemental material
 
     def _Fa(self, i, d):
+        assert(i > self.t)
         return exp(-d * (i - self.t) / 100) / (100 / d)
 
     def _Sa(self, s, d):
@@ -139,9 +170,12 @@ class Relation(Background):
 
 
 def main():
-    # lines = [line.strip() for line in open("ersa/generated.match")]
-    # for i in range(5):
-    #     print(lines[i])
+    t = 2.5       # in cM
+    h = 10        # in cM
+    theta = 3.12  # in cM
+    lambda_ = 14  # estimated from Fig. 2
+    r = 35.3      # ~for humans
+    c = 22        # human autosomes
     pass
 
 
