@@ -156,6 +156,7 @@ class Relation(Background):
         result *= self._Sa(s[np+1:], d)
         return result
 
+    # TODO add function to return log-likelihood for all d, in order to report probabilities
     def MLL(self, n, s):
         mll_dict = {}
         s_sorted = sorted(s)
