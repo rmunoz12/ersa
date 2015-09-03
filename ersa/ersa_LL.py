@@ -116,11 +116,33 @@ class Relation(Background):
     def _La(self, na, sa, d):
         return self._Na(na, d) * self._Sa(sa, d)  # changed n on RHS of eq. 5 to na
 
+    # s must be sorted smallest to largest
+    def _MLr(self, np, na, s, d):
+        result = 1
+        result *= self._Np(np)
+        result *= self._Na(na, d)
+        result *= self._Sp(s[:np + 1])
+        result *= self._Sa(s[np+1:], d)
+        return result
+
+    def MLL(self, n, s):
+        mll_dict = {}
+        s_sorted = sorted(s)
+        for d in range(40):
+            mll = 0
+            for np in range(n + 1):
+                mlr = self._MLr(np, n - np, s_sorted, d)
+                mll += log(mlr)
+            mll_dict[d] = mll
+        max_key = max(mll_dict.keys(), key=lambda k: mll_dict[k])
+        return max_key, mll_dict[max_key]
+
 
 def main():
-    t = 2.5
-    theta = 3.12
-    lambda_ = 15
+    # lines = [line.strip() for line in open("ersa/generated.match")]
+    # for i in range(5):
+    #     print(lines[i])
+    pass
 
 
 if __name__ == '__main__':
