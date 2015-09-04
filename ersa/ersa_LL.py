@@ -57,24 +57,23 @@ class Background:
 
     def _Fp(self, i):
         assert i > self.t
-        return (exp(-i - self.t)/self.theta) / self.theta
+        prob = (exp(-i - self.t)/self.theta) / self.theta
+        return log(prob)
 
     def _Sp(self, s):
-        result = 1
+        result = 0
         for i in s:
-            result *= self._Fp(i)
+            result += self._Fp(i)
         return result
 
     def _Np(self, n):
-        return poisson.pmf(n, self.lambda_)
-
-    def L(self, n, s):
-        return self._Np(n) * self._Sp(s)
+        prob = poisson.pmf(n, self.lambda_)
+        return log(prob)
 
     def LL(self, n, s):
         ret = 0
-        ret += log(self._Np(n))
-        ret += log(self._Sp(s))
+        ret += self._Np(n)
+        ret += self._Sp(s)
         return ret
 
 
@@ -141,39 +140,37 @@ class Relation(Background):
 
     def _Fa(self, i, d):
         assert i > self.t
-        return exp(-d * (i - self.t) / 100) / (100 / d)
+        prob = exp(-d * (i - self.t) / 100) / (100 / d)
+        return log(prob)
 
     def _Sa(self, s, d):
-        result = 1
+        result = 0
         for i in s:
-            result *= self._Fa(i, d)
+            result += self._Fa(i, d)
         return result
 
     def _p(self, d):
         return exp((-d * self.t) / 100)
 
     def _Na(self, n, d):
-        lambda_ = (-self.a * (self.r * d + self.c) * self._p(d)) / (2 ** (d - 1))
-        return poisson.pmf(n, lambda_)
-
-    def _La(self, na, sa, d):
-        return self._Na(na, d) * self._Sa(sa, d)  # changed n on RHS of eq. 5 to na
+        lambda_ = (self.a * (self.r * d + self.c) * self._p(d)) / (2 ** (d - 1))
+        prob = poisson.pmf(n, lambda_)
+        return log(prob)
 
     # s must be sorted smallest to largest
     def _MLr(self, np, na, s, d):
-        result = 1
-        result *= self._Np(np)
-        result *= self._Na(na, d)
-        result *= self._Sp(s[:np + 1])
-        result *= self._Sa(s[np+1:], d)
+        result = 0
+        result += self._Np(np)
+        result += self._Na(na, d)
+        result += self._Sp(s[:np + 1])
+        result += self._Sa(s[np+1:], d)
         return result
 
     def MLL(self, n, s, d):
         mll_dict = {}
         s_sorted = sorted(s)
         for np in range(n + 1):
-            mlr = self._MLr(np, n - np, s_sorted, d)
-            mll = log(mlr)
+            mll = self._MLr(np, n - np, s_sorted, d)
             mll_dict[np] = mll
         max_key = max(mll_dict.keys(), key=lambda k: mll_dict[k])
         return max_key, mll_dict[max_key]
