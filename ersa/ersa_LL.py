@@ -9,6 +9,8 @@
 
 from math import exp, log
 from scipy.stats import poisson
+from operator import itemgetter
+from ersa.chisquare import test_LL_ratio
 
 
 class Background:
@@ -57,7 +59,7 @@ class Background:
 
     def _Fp(self, i):
         assert i > self.t
-        prob = (exp(-i - self.t)/self.theta) / self.theta
+        prob = exp(-(i - self.t) / self.theta) / self.theta
         return log(prob)
 
     def _Sp(self, s):
@@ -174,6 +176,23 @@ class Relation(Background):
             mll_dict[np] = mll
         max_key = max(mll_dict.keys(), key=lambda k: mll_dict[k])
         return max_key, mll_dict[max_key]
+
+
+def estimate_relation(pair, n, s, h0, ha, max_d):
+    assert isinstance(h0, Background)
+    assert isinstance(ha, Relation)
+
+    null_LL = h0.LL(n, s)
+
+    alts = []
+    for d in range(1, max_d + 1):
+        alt_np, alt_MLL = ha.MLL(n, s, d)
+        alts.append((d, alt_np, alt_MLL))
+    max_alt = max(alts, key=itemgetter(2))
+
+    reject = test_LL_ratio(null_LL, max_alt[2])
+
+    return null_LL, max_alt[2], max_alt[0], reject
 
 
 def main():
