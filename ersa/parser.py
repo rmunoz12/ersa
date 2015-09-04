@@ -1,43 +1,52 @@
-import sys
+"""Reading and parsing *.match file from Germline"""
+#   Copyright (c) 2015 by
+#   Richard Munoz <rmunoz@nygenome.org>
+#   Jie Yuan <jyuan@nygenome.org>
+#   Yaniv Erlich <yaniv@nygenome.org>
+#
+#   All rights reserved
+#   GPL license
 
-"""
-Class SharedSegment
--------------------
-
-Stores named values for a matchfile line, see "Output" from
-http://www1.cs.columbia.edu/~gusev/germline/
-
-Assumes that each value in the inputed parameter list
-is a string.
-"""
 class SharedSegment:
-    def __init__(self, parameterList):
-        self.familyID1 = int(parameterList[0])
-        self.indivID1 = parameterList[1]
-        self.familyID2 = int(parameterList[2])
-        self.indivID2 = parameterList[3]
-        self.chrom = int(parameterList[4])
-        self.bpStart = int(parameterList[5])
-        self.bpEnd = int(parameterList[6])
-        self.snpStart = parameterList[7]
-        self.snpEnd = parameterList[8]
-        self.totalSNP = int(parameterList[9])
-        self.length = float(parameterList[10])
-        self.lengthUnit = parameterList[11]
-        self.mismatchSNP = int(parameterList[12])
-        self.ind1homozygous = int(parameterList[13])
-        self.ind2homozygous = int(parameterList[14])
+    """
+    Class SharedSegment
+    -------------------
+
+    Stores named values for a matchfile line, see "Output" from
+    http://www1.cs.columbia.edu/~gusev/germline/
+
+    Assumes that each value in the inputed param_list is a string.
+    """
+    def __init__(self, param_list):
+        self.familyID1 = int(param_list[0])
+        self.indivID1 = param_list[1]
+        self.familyID2 = int(param_list[2])
+        self.indivID2 = param_list[3]
+        self.chrom = int(param_list[4])
+        self.bpStart = int(param_list[5])
+        self.bpEnd = int(param_list[6])
+        self.snpStart = param_list[7]
+        self.snpEnd = param_list[8]
+        self.totalSNP = int(param_list[9])
+        self.length = float(param_list[10])
+        self.lengthUnit = param_list[11]
+        self.mismatchSNP = int(param_list[12])
+        self.ind1homozygous = int(param_list[13])
+        self.ind2homozygous = int(param_list[14])
 
 
 def read_matchfile(path):
-    sList = []
+    """
+    Reads a match file at path and returns a list of SharedSegments.
+    """
+    s_list = []
     matchfile = open(path)
     lines = [[val for val in line.split()] for line in matchfile]
     matchfile.close()
     for line in lines:
         segment = SharedSegment(line)
-        sList.append(segment)
-    return sList
+        s_list.append(segment)
+    return s_list
 
 
 def get_pair_dict(path):
@@ -50,9 +59,9 @@ def get_pair_dict(path):
     n = number of shared segments
     s = list of shared segment lengths (in cM)
     """
-    sList = read_matchfile(path)
+    s_list = read_matchfile(path)
     pair_dict = {}
-    for seg in sList:
+    for seg in s_list:
         assert isinstance(seg, SharedSegment)
         assert seg.lengthUnit == "cM"  # TODO add conversion to cM instead of assertion
         pair_id = seg.indivID1
