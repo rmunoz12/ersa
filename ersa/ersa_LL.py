@@ -9,14 +9,13 @@
 
 from math import exp, log
 from scipy.stats import poisson
-import pylab as pl
 
 
 class Background:
     """
     Class Background
     ----------------
-    Represents the null hypothesis, Lp.
+    Represents a calculator for the null hypothesis, Lp.
 
     Created with empirical parameters, t, theta, lambba_.
 
@@ -79,16 +78,14 @@ class Background:
         return ret
 
 
-
 class Relation(Background):
     """
     Class Relation
     --------------
-    Represents the alternative hypothesis, Lr.
+    Represents a calculator for the alternative hypothesis, Lr.
 
-    Created with empirical parameters c, r, t, theta, and lambda_, and the
-    chosen d value. The latter three empirical parameters are described in
-    Class Background.
+    Created with empirical parameters c, r, t, theta, and lambda_. The
+    latter three empirical parameters are described in Class Background.
 
     Provides the a function returning the maximum log-likelihood over
     all possible np, MLL(n, s).  Create this class for each d evaluated.
@@ -101,6 +98,11 @@ class Relation(Background):
 
     ha = Relation(22, 35.3, 2.5, 3.12, 14)
     ha.MLL(n, s)
+
+
+    See also
+    -------
+    Class Background
 
 
     Notes
@@ -131,47 +133,46 @@ class Relation(Background):
         c = number of autosomes
         p(t) = probability that a shared segment is longer than t
     """
-    def __init__(self, c, r, d, t, theta, lambda_):
+    def __init__(self, c, r, t, theta, lambda_):
         super(Relation, self).__init__(t, theta, lambda_)
         self.c = c
         self.r = r
-        self.d = d
         self.a = 2  # see Huff et al 2011 supplemental material
 
-    def _Fa(self, i):
+    def _Fa(self, i, d):
         assert i > self.t
-        return exp(-self.d * (i - self.t) / 100) / (100 / self.d)
+        return exp(-d * (i - self.t) / 100) / (100 / d)
 
-    def _Sa(self, s):
+    def _Sa(self, s, d):
         result = 1
         for i in s:
-            result *= self._Fa(i)
+            result *= self._Fa(i, d)
         return result
 
-    def _p(self):
-        return exp((-self.d * self.t) / 100)
+    def _p(self, d):
+        return exp((-d * self.t) / 100)
 
-    def _Na(self, n):
-        lambda_ = (-self.a * (self.r * self.d + self.c) * self._p()) / (2 ** (self.d - 1))
+    def _Na(self, n, d):
+        lambda_ = (-self.a * (self.r * d + self.c) * self._p(d)) / (2 ** (d - 1))
         return poisson.pmf(n, lambda_)
 
-    def _La(self, na, sa):
-        return self._Na(na) * self._Sa(sa)  # changed n on RHS of eq. 5 to na
+    def _La(self, na, sa, d):
+        return self._Na(na, d) * self._Sa(sa, d)  # changed n on RHS of eq. 5 to na
 
     # s must be sorted smallest to largest
-    def _MLr(self, np, na, s):
+    def _MLr(self, np, na, s, d):
         result = 1
         result *= self._Np(np)
-        result *= self._Na(na)
+        result *= self._Na(na, d)
         result *= self._Sp(s[:np + 1])
-        result *= self._Sa(s[np+1:])
+        result *= self._Sa(s[np+1:], d)
         return result
 
-    def MLL(self, n, s):
+    def MLL(self, n, s, d):
         mll_dict = {}
         s_sorted = sorted(s)
         for np in range(n + 1):
-            mlr = self._MLr(np, n - np, s_sorted)
+            mlr = self._MLr(np, n - np, s_sorted, d)
             mll = log(mlr)
             mll_dict[np] = mll
         max_key = max(mll_dict.keys(), key=lambda k: mll_dict[k])
@@ -179,12 +180,6 @@ class Relation(Background):
 
 
 def main():
-    t = 2.5       # in cM
-    h = 10        # in cM
-    theta = 3.12  # in cM
-    lambda_ = 14  # estimated from Fig. 2
-    r = 35.3      # ~for humans
-    c = 22        # human autosomes
     pass
 
 
