@@ -80,7 +80,7 @@ def get_pair_dict(path):
 
 
 def main():
-    paired_data = get_pair_dict("../test_data/generated.match")
+    paired_data = get_pair_dict("../test_data/test_parser.match")
     for k, v in paired_data.items():
         print("pair_id: {}\t(n, s): {}".format(k, v))
 
