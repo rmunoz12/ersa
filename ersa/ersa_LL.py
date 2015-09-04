@@ -57,7 +57,7 @@ class Background:
         self.lambda_ = lambda_
 
     def _Fp(self, i):
-        assert(i > self.t)
+        assert i > self.t
         return (exp(-i - self.t)/self.theta) / self.theta
 
     def _Sp(self, s):
@@ -139,7 +139,7 @@ class Relation(Background):
         self.a = 2  # see Huff et al 2011 supplemental material
 
     def _Fa(self, i):
-        assert(i > self.t)
+        assert i > self.t
         return exp(-self.d * (i - self.t) / 100) / (100 / self.d)
 
     def _Sa(self, s):

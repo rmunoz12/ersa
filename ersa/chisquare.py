@@ -1,4 +1,4 @@
-"""Chi square testing and hypothesis inference"""
+"""Likelihood ratio test"""
 #   Copyright (c) 2015 by
 #   Richard Munoz <rmunoz@nygenome.org>
 #   Jie Yuan <jyuan@nygenome.org>
@@ -8,12 +8,20 @@
 #   GPL license
 
 from scipy import stats
-import math
 
-#confidence interval? get the inverse cdf at p=ci,p=1-ci
-def likelihoodRatioTest(Lr, Ln, df=2, ci=0.05):
-    ratio = -2*math.log(Lr) + 2*math.log(Ln)
+def test_LL_ratio(LLr, LLn, df=2, alpha=0.05):
+    """
+    Perform a likelihood ratio test of LLr (alternative) and LLn (null)
+    and return whether to accept (False) or reject (True) the null.
 
-    lowerCI = stats.chi2.ppf(ci,2)
-    upperCI = stats.chi2.ppf(1-ci,2)
-    return 1-stats.chi2.cdf(ratio, df), lowerCI, upperCI
+    Parameters
+    ----------
+    LLr: log-likelihood of alternative
+    LLn: log-likelihood of null
+    df: degrees of freedom for the ratio test
+    alpha: confidence level
+    """
+    ratio = -2 * LLr + 2 * LLn
+    p = 1 - stats.chi2.cdf(ratio, df)
+    return True if p < alpha else False
+
