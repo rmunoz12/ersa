@@ -7,7 +7,7 @@
 #   All rights reserved
 #   GPL license
 
-from math import exp, log
+from math import exp, log, factorial
 from scipy.stats import poisson
 from operator import itemgetter
 from ersa.chisquare import LL_ratio_test
@@ -156,8 +156,8 @@ class Relation(Background):
 
     def _Na(self, n, d):
         lambda_ = (self.a * (self.r * d + self.c) * self._p(d)) / (2 ** (d - 1))
-        prob = poisson.pmf(n, lambda_)
-        return log(prob)
+        l_prob = n * log(lambda_) - lambda_ - log(factorial(n))
+        return l_prob
 
     # s must be sorted smallest to largest
     def _MLr(self, np, na, s, d):
@@ -168,16 +168,19 @@ class Relation(Background):
         result += self._Sa(s[np+1:], d)
         return result
 
+    # assumes that s is sorted smallest to largest
     def MLL(self, n, s, d):
-        mll_dict = {}  # TODO change to save max LL thus far --> O(1) findmax instead of O(n)
-        s_sorted = sorted(s)  # TODO sort segments once on input
+        max_mll, max_np = None, None
         for np in range(n + 1):
-            mll = self._MLr(np, n - np, s_sorted, d)
-            mll_dict[np] = mll
-        max_key = max(mll_dict.keys(), key=lambda k: mll_dict[k])
-        return max_key, mll_dict[max_key]
+            mll = self._MLr(np, n - np, s, d)
+            if max_mll is None:
+                max_mll, max_np = mll, np
+            elif max_mll < mll:
+                max_mll, max_np = mll, np
+        return max_np, max_mll
 
 
+# assumes that s is sorted smallest to largest
 def estimate_relation(pair, n, s, h0, ha, max_d):
     assert isinstance(h0, Background)
     assert isinstance(ha, Relation)

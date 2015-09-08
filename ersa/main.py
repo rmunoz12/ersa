@@ -16,12 +16,12 @@ from sys import argv
 """Default parameter values"""
 MAX_D = 40
 
-t = 2.5          # in cM
-h = 10           # in cM
+t = 2.5                 # in cM
+h = 10                  # in cM
 theta = 3.197036753     # in cM
-lambda_ = 13.73  #
-r = 35.2548101         # ~for humans
-c = 22           # human autosomes
+lambda_ = 13.73         #
+r = 35.2548101          # ~for humans
+c = 22                  # human autosomes
 
 
 def main():

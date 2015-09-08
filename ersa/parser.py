@@ -68,7 +68,7 @@ def get_pair_dict(path, t, h):
         assert isinstance(seg, SharedSegment)
         assert seg.lengthUnit == "cM"  # TODO add conversion to cM instead of assertion
 
-        if seg.length < t or seg.length > h:
+        if seg.length < t:  # Note: seg.length > h filtered only for background parameters
             continue
 
         pair_id = seg.indivID1
@@ -83,6 +83,10 @@ def get_pair_dict(path, t, h):
             pair_dict[pair_id] = (n, shared_segs)
         else:
             pair_dict[pair_id] = (1, [seg.length])
+
+    for k, v in pair_dict.items():
+        v[1].sort()
+
     return pair_dict
 
 
