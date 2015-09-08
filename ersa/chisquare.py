@@ -25,3 +25,19 @@ def LL_ratio_test(LLr, LLn, df=2, alpha=0.05):
     p = 1 - stats.chi2.cdf(ratio, df)
     return True if p < alpha else False
 
+#confidence interval for d given alpha
+def likelihood_ratio_CI(alternate_likelihoods, null_likelihood, df=2, alpha=0.05):
+
+    #threshold from inverse cdf
+    chi_thresh = stats.chi2.ppf(1-alpha,df)
+
+    lower_d = 999
+    upper_d = 0
+    for alt in alternate_likelihoods:
+        ratio = -2 * alt[2] + 2 * null_likelihood
+        if ratio < chi_thresh:
+            if alt[0] < lower_d:
+                lower_d = alt[0]
+            elif alt[0] > upper_d:
+                upper_d = alt[0]
+    return lower_d, upper_d
