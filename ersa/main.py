@@ -9,8 +9,7 @@
 
 from ersa.ersa_LL import Background, Relation, estimate_relation
 from ersa.parser import get_pair_dict
-from ersa.chisquare import test_LL_ratio
-
+from time import time
 from sys import argv
 
 
@@ -30,16 +29,29 @@ def main():
     assert 1 < argc < 3  # TODO add command line options
     path = argv[1]
 
+    start_time = time()
+
+    print("--- Reading match file ---")
+
     pair_dict = get_pair_dict(path, t, h)
 
     h0 = Background(t, theta, lambda_)
     ha = Relation(c, r, t, theta, lambda_)
 
+    print("--- {} seconds ---".format(round(time() - start_time, 3)))
+    print()
+
+    print("--- Solving ---")
+
+    output_file = open("test.out", "w")
     for pair, (n, s) in pair_dict.items():
         null_LL, max_alt_LL, d, reject = estimate_relation(pair, n, s, h0, ha, MAX_D)
         print("Pair: {}\td: {}\tReject: {}\tLLn: {}\tLLr: {}".
-              format(pair, d, reject, null_LL, max_alt_LL,))
+              format(pair, d, reject, null_LL, max_alt_LL,),
+              file=output_file)
 
+    output_file.close()
+    print("--- {} seconds ---".format(round(time() - start_time, 3)))
 
 if __name__ == '__main__':
     main()

@@ -10,7 +10,7 @@
 from math import exp, log
 from scipy.stats import poisson
 from operator import itemgetter
-from ersa.chisquare import test_LL_ratio
+from ersa.chisquare import LL_ratio_test
 
 
 class Background:
@@ -58,8 +58,8 @@ class Background:
         self.lambda_ = lambda_
 
     def _Fp(self, i):
-        assert i > self.t
-        prob = exp(-(i - self.t) / self.theta) / self.theta
+        assert i >= self.t
+        prob = exp(-(i - self.t) / (self.theta - self.t)) / (self.theta - self.t)
         return log(prob)
 
     def _Sp(self, s):
@@ -141,7 +141,7 @@ class Relation(Background):
         self.a = 2  # see Huff et al 2011 supplemental material
 
     def _Fa(self, i, d):
-        assert i > self.t
+        assert i >= self.t
         prob = exp(-d * (i - self.t) / 100) / (100 / d)
         return log(prob)
 
@@ -169,8 +169,8 @@ class Relation(Background):
         return result
 
     def MLL(self, n, s, d):
-        mll_dict = {}
-        s_sorted = sorted(s)
+        mll_dict = {}  # TODO change to save max LL thus far --> O(1) findmax instead of O(n)
+        s_sorted = sorted(s)  # TODO sort segments once on input
         for np in range(n + 1):
             mll = self._MLr(np, n - np, s_sorted, d)
             mll_dict[np] = mll
@@ -190,7 +190,7 @@ def estimate_relation(pair, n, s, h0, ha, max_d):
         alts.append((d, alt_np, alt_MLL))
     max_alt = max(alts, key=itemgetter(2))
 
-    reject = test_LL_ratio(null_LL, max_alt[2])
+    reject = LL_ratio_test(null_LL, max_alt[2])
 
     return null_LL, max_alt[2], max_alt[0], reject
 

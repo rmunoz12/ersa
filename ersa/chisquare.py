@@ -9,7 +9,7 @@
 
 from scipy import stats
 
-def test_LL_ratio(LLr, LLn, df=2, alpha=0.05):
+def LL_ratio_test(LLr, LLn, df=2, alpha=0.05):
     """
     Perform a likelihood ratio test of LLr (alternative) and LLn (null)
     and return whether to accept (False) or reject (True) the null.
