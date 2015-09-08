@@ -7,7 +7,7 @@
 #   All rights reserved
 #   GPL license
 
-from math import exp, log, factorial
+from math import exp, log, factorial, pi
 from scipy.stats import poisson
 from operator import itemgetter
 from ersa.chisquare import LL_ratio_test
@@ -142,8 +142,11 @@ class Relation(Background):
 
     def _Fa(self, i, d):
         assert i >= self.t
-        prob = exp(-d * (i - self.t) / 100) / (100 / d)
-        return log(prob)
+        #prob = exp(-d * (i - self.t) / 100) / (100 / d)
+        #return log(prob)
+        prob = -d * (i-self.t) / 100 - log(100 / d)
+        return prob
+
 
     def _Sa(self, s, d):
         result = 0
@@ -154,9 +157,17 @@ class Relation(Background):
     def _p(self, d):
         return exp((-d * self.t) / 100)
 
+    def _approx_log_fact_n(self, n):
+        if(n == 0):
+            return log(1)
+        else:
+            return (n * log(n) - n + log( n * (1 + 4 * n * (1 + 2 * n))) / 6 + log(pi)/2)
+
     def _Na(self, n, d):
-        lambda_ = (self.a * (self.r * d + self.c) * self._p(d)) / (2 ** (d - 1))
-        l_prob = n * log(lambda_) - lambda_ - log(factorial(n))
+        #lambda_ = (self.a * (self.r * d + self.c) * self._p(d)) / (2 ** (d - 1))
+        #l_prob = n * log(lambda_) - lambda_ - log(factorial(n))
+        loglambda_ = log(self.a * (self.r * d + self.c)) - d * self.t / 100 - (d - 1)*log(2)
+        l_prob = n * loglambda_ - exp(loglambda_) - self._approx_log_fact_n(n)
         return l_prob
 
     # s must be sorted smallest to largest
