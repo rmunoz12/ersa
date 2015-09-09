@@ -45,9 +45,9 @@ def main():
 
     output_file = open("test.out", "w")
     for pair, (n, s) in pair_dict.items():
-        null_LL, max_alt_LL, d, reject = estimate_relation(pair, n, s, h0, ha, MAX_D)
-        print("Pair: {}\td: {}\tReject: {}\tLLn: {}\tLLr: {}".
-              format(pair, d, reject, null_LL, max_alt_LL,),
+        null_LL, max_alt_LL, d, reject, lower_d, upper_d = estimate_relation(pair, n, s, h0, ha, MAX_D)
+        print("Pair: {}\td: {}\tReject: {}\tLLn: {}\tLLr: {}\tlower_d: {}\tupper_d: {}".
+              format(pair, d, reject, null_LL, max_alt_LL, lower_d, upper_d),
               file=output_file)
 
     output_file.close()

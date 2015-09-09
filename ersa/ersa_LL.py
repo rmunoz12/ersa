@@ -10,7 +10,7 @@
 from math import exp, log, factorial, pi
 from scipy.stats import poisson
 from operator import itemgetter
-from ersa.chisquare import LL_ratio_test
+from ersa.chisquare import LL_ratio_test, likelihood_ratio_CI
 
 
 class Background:
@@ -206,7 +206,10 @@ def estimate_relation(pair, n, s, h0, ha, max_d):
 
     reject = LL_ratio_test(null_LL, max_alt[2])
 
-    return null_LL, max_alt[2], max_alt[0], reject
+    #estimate range for d
+    lower_d, upper_d = likelihood_ratio_CI(alts, null_LL)
+
+    return null_LL, max_alt[2], max_alt[0], reject, lower_d, upper_d
 
 
 def main():
