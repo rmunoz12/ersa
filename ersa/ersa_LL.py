@@ -69,8 +69,8 @@ class Background:
         return result
 
     def _Np(self, n):
-        prob = poisson.pmf(n, self.lambda_)
-        return log(prob)
+        l_prob = n * log(self.lambda_) - self.lambda_ - log(factorial(n))
+        return l_prob
 
     def LL(self, n, s):
         ret = 0
