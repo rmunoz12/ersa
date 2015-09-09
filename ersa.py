@@ -14,7 +14,7 @@ from sys import argv
 
 
 """Default parameter values"""
-MAX_D = 40
+MAX_D = 10
 
 t = 2.5                 # in cM
 h = 10                  # in cM
