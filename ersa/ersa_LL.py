@@ -144,8 +144,8 @@ class Relation(Background):
         assert i >= self.t
         #prob = exp(-d * (i - self.t) / 100) / (100 / d)
         #return log(prob)
-        prob = -d * (i-self.t) / 100 - log(100 / d)
-        return prob
+        l_prob = (-d * (i-self.t) / 100) - log(100 / d)
+        return l_prob
 
 
     def _Sa(self, s, d):
@@ -175,8 +175,8 @@ class Relation(Background):
         result = 0
         result += self._Np(np)
         result += self._Na(na, d)
-        result += self._Sp(s[:np + 1])
-        result += self._Sa(s[np+1:], d)
+        result += self._Sp(s[:np])
+        result += self._Sa(s[np:], d)
         return result
 
     # assumes that s is sorted smallest to largest
