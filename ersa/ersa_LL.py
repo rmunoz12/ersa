@@ -196,7 +196,7 @@ def estimate_relation(pair, n, s, h0, ha, max_d):
         alts.append((d, alt_np, alt_MLL))
     max_alt = max(alts, key=itemgetter(2))
 
-    reject = LL_ratio_test(null_LL, max_alt[2])
+    reject = LL_ratio_test(max_alt[2], null_LL)
 
     #estimate range for d
     lower_d, upper_d = likelihood_ratio_CI(alts, max_alt[2])

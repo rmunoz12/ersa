@@ -21,7 +21,7 @@ def LL_ratio_test(LLr, LLn, df=2, alpha=0.05):
     df: degrees of freedom for the ratio test
     alpha: confidence level
     """
-    ratio = -2 * LLr + 2 * LLn  # TODO flip in order to correct notation
+    ratio = -2 * LLn + 2 * LLr 
     p = 1 - stats.chi2.cdf(ratio, df)
     return True if p < alpha else False
 
