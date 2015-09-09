@@ -198,7 +198,10 @@ def estimate_relation(pair, n, s, h0, ha, max_d):
 
     reject = LL_ratio_test(null_LL, max_alt[2])
 
-    return null_LL, max_alt[2], max_alt[0] - 1, reject  # subtract one from d based on a = 2
+    #estimate range for d
+    lower_d, upper_d = likelihood_ratio_CI(alts, null_LL)
+
+    return null_LL, max_alt[2], max_alt[0] - 1, reject, lower_d, upper_d  # subtract one from d based on a = 2
 
 
 def main():
