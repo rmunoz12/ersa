@@ -40,7 +40,7 @@ def likelihood_ratio_CI(alts, max_alt_LL, df=2, alpha=0.05):
         #         lower_d = alt[0]
         #     elif alt[0] > upper_d:
         #         upper_d = alt[0]
-        if not LL_ratio_test(alt[2], max_alt_LL):
+        if not LL_ratio_test(max_alt_LL, alt[2]):
             d = alt[0]
             if d < lower_d:
                 lower_d = d
