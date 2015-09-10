@@ -163,7 +163,8 @@ class Relation(Background):
         return l_prob
 
     # s must be sorted smallest to largest
-    def _MLr(self, np, na, s, d):
+    def _LLr(self, np, na, s, d):
+        """Compute Lr given d and np"""
         result = 0
         result += self._Np(np)
         result += self._Na(na, d)
@@ -175,7 +176,7 @@ class Relation(Background):
     def MLL(self, n, s, d):
         max_mll, max_np = None, None
         for np in range(n + 1):
-            mll = self._MLr(np, n - np, s, d)
+            mll = self._LLr(np, n - np, s, d)
             if max_mll is None:
                 max_mll, max_np = mll, np
             elif max_mll < mll:
