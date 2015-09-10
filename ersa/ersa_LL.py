@@ -207,11 +207,3 @@ def estimate_relation(pair, n, s, h0, ha, max_d):
 
     # subtract one from d based on a = 2
     return null_LL, max_LL, d, reject, lower_d, upper_d
-
-
-def main():
-    pass
-
-
-if __name__ == '__main__':
-    main()
