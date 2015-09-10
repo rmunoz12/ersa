@@ -7,8 +7,7 @@
 #   All rights reserved
 #   GPL license
 
-from math import exp, log, factorial, pi
-from scipy.stats import poisson
+from math import exp, log, factorial
 from operator import itemgetter
 from ersa.chisquare import LL_ratio_test, likelihood_ratio_CI
 
@@ -142,8 +141,6 @@ class Relation(Background):
 
     def _Fa(self, i, d):
         assert i >= self.t
-        #prob = exp(-d * (i - self.t) / 100) / (100 / d)
-        #return log(prob)
         l_prob = (-d * (i-self.t) / 100) - log(100 / d)
         return l_prob
 
@@ -162,9 +159,12 @@ class Relation(Background):
         l_prob = n * log(lambda_) - lambda_ - log(factorial(n))
         return l_prob
 
-    # s must be sorted smallest to largest
     def _LLr(self, np, na, s, d):
-        """Compute Lr given d and np"""
+        """
+        Compute Lr given d and np.
+
+        Requires s to be pre-sorted from smallest to largest.
+        """
         result = 0
         result += self._Np(np)
         result += self._Na(na, d)
@@ -172,8 +172,11 @@ class Relation(Background):
         result += self._Sa(s[np:], d)
         return result
 
-    # assumes that s is sorted smallest to largest
     def MLL(self, n, s, d):
+        """
+        For a given d, return the maximum log-likelihood (MLL).
+        Requires s to be sorted smallest to largest.
+        """
         max_mll, max_np = None, None
         for np in range(n + 1):
             mll = self._LLr(np, n - np, s, d)
@@ -184,8 +187,15 @@ class Relation(Background):
         return max_np, max_mll
 
 
-# assumes that s is sorted smallest to largest
 def estimate_relation(pair, n, s, h0, ha, max_d):
+    """
+    Tests a pair of individuals for a relation and
+    returns relevant parameters.
+
+    Requires s to a pre-sorted list of shared segments,
+    from smallest to largest.  h0 and ha must be Background
+    Relation objects.
+    """
     assert isinstance(h0, Background)
     assert isinstance(ha, Relation)
     for i in range(1, len(s)):
