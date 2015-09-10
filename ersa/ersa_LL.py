@@ -144,7 +144,6 @@ class Relation(Background):
         l_prob = (-d * (i-self.t) / 100) - log(100 / d)
         return l_prob
 
-
     def _Sa(self, s, d):
         result = 0
         for i in s:
