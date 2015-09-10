@@ -88,13 +88,3 @@ def get_pair_dict(path, t, h):
         v[1].sort()
 
     return pair_dict
-
-
-def main():
-    paired_data = get_pair_dict("../test_data/test_parser.match")
-    for k, v in paired_data.items():
-        print("pair_id: {}\t(n, s): {}".format(k, v))
-
-
-if __name__ == '__main__':
-    main()

@@ -187,6 +187,7 @@ class Relation(Background):
 def estimate_relation(pair, n, s, h0, ha, max_d):
     assert isinstance(h0, Background)
     assert isinstance(ha, Relation)
+    # TODO profile performance hit of checking that s is sorted
 
     null_LL = h0.LL(n, s)
 
@@ -207,11 +208,3 @@ def estimate_relation(pair, n, s, h0, ha, max_d):
 
     # subtract one from d based on a = 2
     return null_LL, max_LL, d, reject, lower_d, upper_d
-
-
-def main():
-    pass
-
-
-if __name__ == '__main__':
-    main()
