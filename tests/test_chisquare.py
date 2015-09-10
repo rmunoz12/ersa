@@ -32,8 +32,8 @@ class Test_chisquare:
                 if max_LL > global_max_LL:
                     global_max_LL = max_LL
 
-            df = 2
-            alpha = 0.05
+            df = randint(0, 30)
+            alpha = random()
             lower_d, upper_d = likelihood_ratio_CI(alts, global_max_LL, df, alpha)
             for alt in alts:
                 if not LL_ratio_test(global_max_LL, alt[2], df, alpha):
