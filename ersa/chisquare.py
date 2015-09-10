@@ -7,7 +7,7 @@
 #   All rights reserved
 #   GPL license
 
-from scipy import stats
+from scipy.stats import chi2
 
 
 def LL_ratio_test(LLr, LLn, df=2, alpha=0.05):
@@ -23,7 +23,7 @@ def LL_ratio_test(LLr, LLn, df=2, alpha=0.05):
     alpha: confidence level
     """
     ratio = -2 * LLn + 2 * LLr 
-    p = 1 - stats.chi2.cdf(ratio, df)
+    p = 1 - chi2.cdf(ratio, df)
     return True if p < alpha else False
 
 
