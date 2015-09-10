@@ -44,11 +44,12 @@ def main():
     print("--- Solving ---")
 
     output_file = open("test.out", "w")
+    print("Individual_1\tIndividual_2\tNumber_Meioses\tRelatedness\tLLn\tLlr\tlower_d_CI\tupper_d_CI",file=output_file)
+    
     for pair, (n, s) in pair_dict.items():
         null_LL, max_alt_LL, d, reject, lower_d, upper_d = estimate_relation(pair, n, s, h0, ha, MAX_D)
-        print("Pair: {}\td: {}\tReject: {}\tLLn: {}\tLLr: {}\tlower_d: {}\tupper_d: {}".
-              format(pair, d, reject, null_LL, max_alt_LL, lower_d, upper_d),
-              file=output_file)
+        pair1, pair2 = pair.split(':')
+        print(pair1, '\t', pair2, '\t', d, '\t', reject, '\t', null_LL, '\t', max_alt_LL, '\t', lower_d, '\t', upper_d, file=output_file)
 
     output_file.close()
     print("--- {} seconds ---".format(round(time() - start_time, 3)))
