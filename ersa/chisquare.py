@@ -9,6 +9,7 @@
 
 from scipy import stats
 
+
 def LL_ratio_test(LLr, LLn, df=2, alpha=0.05):
     """
     Perform a likelihood ratio test of LLr (alternative) and LLn (null)
@@ -25,22 +26,18 @@ def LL_ratio_test(LLr, LLn, df=2, alpha=0.05):
     p = 1 - stats.chi2.cdf(ratio, df)
     return True if p < alpha else False
 
-#confidence interval for d given alpha
+
 def likelihood_ratio_CI(alts, max_alt_LL, df=2, alpha=0.05):
-
-    #threshold from inverse cdf
-    # chi_thresh = stats.chi2.ppf(1-alpha,df)
-
+    """
+    For a given set of alternative models and the log-likelihood of the
+    maximum model, returns the lower and upper estimates for d using
+    a chi-square approximation for the likelihood ratio test with
+    df degrees of freedom and an alpha confidence level.
+    """
     lower_d = 999
     upper_d = 0
     for alt in alts:
-        # ratio = -2 * alt[2] + 2 * null_likelihood
-        # if ratio < chi_thresh:
-        #     if alt[0] < lower_d:
-        #         lower_d = alt[0]
-        #     elif alt[0] > upper_d:
-        #         upper_d = alt[0]
-        if not LL_ratio_test(max_alt_LL, alt[2]):
+        if not LL_ratio_test(max_alt_LL, alt[2], df, alpha):
             d = alt[0]
             if d < lower_d:
                 lower_d = d
