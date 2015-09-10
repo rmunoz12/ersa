@@ -7,7 +7,8 @@
 #   All rights reserved
 #   GPL license
 
-from scipy import stats
+from scipy.stats import chi2
+
 
 def LL_ratio_test(LLr, LLn, df=2, alpha=0.05):
     """
@@ -22,28 +23,25 @@ def LL_ratio_test(LLr, LLn, df=2, alpha=0.05):
     alpha: confidence level
     """
     ratio = -2 * LLn + 2 * LLr 
-    p = 1 - stats.chi2.cdf(ratio, df)
+    p = 1 - chi2.cdf(ratio, df)
     return True if p < alpha else False
 
-#confidence interval for d given alpha
+
 def likelihood_ratio_CI(alts, max_alt_LL, df=2, alpha=0.05):
-
-    #threshold from inverse cdf
-    # chi_thresh = stats.chi2.ppf(1-alpha,df)
-
-    lower_d = 999
-    upper_d = 0
+    """
+    For a given set of alternative models and the log-likelihood of the
+    maximum model, returns the lower and upper estimates for d using
+    a chi-square approximation for the likelihood ratio test with
+    df degrees of freedom and an alpha confidence level.
+    """
+    lower_d, upper_d = None, None
     for alt in alts:
-        # ratio = -2 * alt[2] + 2 * null_likelihood
-        # if ratio < chi_thresh:
-        #     if alt[0] < lower_d:
-        #         lower_d = alt[0]
-        #     elif alt[0] > upper_d:
-        #         upper_d = alt[0]
-        if not LL_ratio_test(max_alt_LL, alt[2]):
+        if not LL_ratio_test(max_alt_LL, alt[2], df, alpha):
             d = alt[0]
-            if d < lower_d:
+            if not lower_d:
+                lower_d, upper_d = d, d
+            elif d < lower_d:
                 lower_d = d
-            if d > upper_d:
+            elif d > upper_d:
                 upper_d = d
     return lower_d, upper_d

@@ -77,13 +77,13 @@ class TestRelation():
                 Na_exp = log(poisson.pmf(n, lambda_))
                 assert Na_obs == Na_exp
 
-    def test_MLr(self):
+    def test_LLr(self):
         s = sorted([10, 8, 6, 4, 3])
         n = len(s)
         d = 3
         for np in range(n + 1):
             na = n - np
-            mlr_obs = self.R._MLr(np, na, s, d)
+            mlr_obs = self.R._LLr(np, na, s, d)
             mlr_exp = self.R._Np(np) + self.R._Na(na, d) + self.R._Sp(s[:np]) + self.R._Sa(s[np:], d)
             assert mlr_obs == mlr_exp
 
