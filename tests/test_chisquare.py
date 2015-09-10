@@ -1,4 +1,5 @@
 from ersa.chisquare import *
+from scipy.stats import chi2
 from random import random, randint
 from math import log
 
@@ -15,7 +16,7 @@ class Test_chisquare:
             alpha = random()
 
             ratio = -2 * LLn + 2 * LLa
-            p = 1 - stats.chi2.cdf(ratio, df)
+            p = 1 - chi2.cdf(ratio, df)
             reject = True if p < alpha else False
             assert LL_ratio_test(LLa, LLn, df, alpha) == reject
 
