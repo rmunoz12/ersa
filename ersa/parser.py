@@ -18,6 +18,8 @@ class SharedSegment:
     Assumes that each value in the inputed param_list is a string.
     """
     def __init__(self, param_list):
+        assert type(param_list) == list
+        assert len(param_list) == 15
         self.familyID1 = int(param_list[0])
         self.indivID1 = param_list[1]
         self.familyID2 = int(param_list[2])
