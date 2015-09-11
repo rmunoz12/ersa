@@ -18,6 +18,8 @@ class SharedSegment:
     Assumes that each value in the inputed param_list is a string.
     """
     def __init__(self, param_list):
+        assert type(param_list) == list
+        assert len(param_list) == 15
         self.familyID1 = int(param_list[0])
         self.indivID1 = param_list[1]
         self.familyID2 = int(param_list[2])
@@ -39,10 +41,9 @@ def read_matchfile(path):
     """
     Reads a match file at path and returns a list of SharedSegments.
     """
-    s_list = []
-    matchfile = open(path)
-    lines = [[val for val in line.split()] for line in matchfile]
-    matchfile.close()
+    s_list, lines = [], []
+    with open(path) as matchfile:
+        lines = [[val for val in line.split()] for line in matchfile]
     for line in lines:
         segment = SharedSegment(line)
         s_list.append(segment)

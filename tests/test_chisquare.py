@@ -1,4 +1,4 @@
-"""Unit Tests for chisquare.py"""
+"""Unit Tests for ersa/chisquare.py"""
 #   Copyright (c) 2015 by
 #   Richard Munoz <rmunoz@nygenome.org>
 #   Jie Yuan <jyuan@nygenome.org>
