@@ -1,4 +1,4 @@
-"""Unit Tests for ersa_LL.py"""
+"""Unit Tests for ersa/ersa_LL.py"""
 #   Copyright (c) 2015 by
 #   Richard Munoz <rmunoz@nygenome.org>
 #   Jie Yuan <jyuan@nygenome.org>
