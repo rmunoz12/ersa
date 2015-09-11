@@ -41,10 +41,9 @@ def read_matchfile(path):
     """
     Reads a match file at path and returns a list of SharedSegments.
     """
-    s_list = []
-    matchfile = open(path)
-    lines = [[val for val in line.split()] for line in matchfile]
-    matchfile.close()
+    s_list, lines = [], []
+    with open(path) as matchfile:
+        lines = [[val for val in line.split()] for line in matchfile]
     for line in lines:
         segment = SharedSegment(line)
         s_list.append(segment)
