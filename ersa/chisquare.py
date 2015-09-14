@@ -10,7 +10,7 @@
 from scipy.stats import chi2
 
 
-def LL_ratio_test(LLr, LLn, df=2, alpha=0.05):
+def LL_ratio_test(LLr, LLn, alpha=0.05, df=2):
     """
     Perform a likelihood ratio test of LLr (alternative) and LLn (null)
     and return whether to accept (False) or reject (True) the null.
@@ -27,7 +27,7 @@ def LL_ratio_test(LLr, LLn, df=2, alpha=0.05):
     return True if p < alpha else False
 
 
-def likelihood_ratio_CI(alts, max_alt_LL, df=2, alpha=0.05):
+def likelihood_ratio_CI(alts, max_alt_LL, alpha=0.05, df=2):
     """
     For a given set of alternative models and the log-likelihood of the
     maximum model, returns the lower and upper estimates for d using
@@ -36,7 +36,7 @@ def likelihood_ratio_CI(alts, max_alt_LL, df=2, alpha=0.05):
     """
     lower_d, upper_d = None, None
     for alt in alts:
-        if not LL_ratio_test(max_alt_LL, alt[2], df, alpha):
+        if not LL_ratio_test(max_alt_LL, alt[2], alpha, df):
             d = alt[0]
             if not lower_d:
                 lower_d, upper_d = d, d
