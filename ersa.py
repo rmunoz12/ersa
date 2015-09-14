@@ -20,6 +20,8 @@ h = 10                  # in cM
 def get_args():
     p = ArgumentParser(description="estimate combined number of generations between pairs of individuals")
     p.add_argument("matchfile", help="input match file")
+    p.add_argument("-a", "--alpha", help="significance level (default: %(default).2f)",
+                   type=float, default=0.05)
     p.add_argument("-c", help="number of autosomes (default: %(default)d for humans)",
                    type=int, default=22)
     p.add_argument("-d", "--dmax", help="max combined number of generations to test (default: %(default)d)",
@@ -62,7 +64,7 @@ def main():
     print("Individual_1\tIndividual_2\tNumber_Meioses\tRelatedness\tLLn\tLlr\tlower_d_CI\tupper_d_CI",file=output_file)
     
     for pair, (n, s) in pair_dict.items():
-        null_LL, max_alt_LL, d, reject, lower_d, upper_d = estimate_relation(pair, n, s, h0, ha, args.dmax)
+        null_LL, max_alt_LL, d, reject, lower_d, upper_d = estimate_relation(n, s, h0, ha, args.dmax, args.alpha)
         pair1, pair2 = pair.split(':')
         print(pair1, '\t', pair2, '\t', d, '\t', reject, '\t', null_LL, '\t', max_alt_LL, '\t', lower_d, '\t', upper_d, file=output_file)
 

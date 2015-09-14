@@ -36,7 +36,7 @@ class Test_chisquare:
             ratio = -2 * LLn + 2 * LLa
             p = 1 - chi2.cdf(ratio, df)
             reject = True if p < alpha else False
-            assert LL_ratio_test(LLa, LLn, df, alpha) == reject
+            assert LL_ratio_test(LLa, LLn, alpha, df) == reject
 
 
     def test_likelihood_ratio_CI(self):
@@ -55,7 +55,7 @@ class Test_chisquare:
 
             df = randint(0, 30)
             alpha = random()
-            lower_d, upper_d = likelihood_ratio_CI(alts, global_max_LL, df, alpha)
+            lower_d, upper_d = likelihood_ratio_CI(alts, global_max_LL, alpha, df)
             for alt in alts:
-                if not LL_ratio_test(global_max_LL, alt[2], df, alpha):
+                if not LL_ratio_test(global_max_LL, alt[2], alpha, df):
                     assert alt[0] >= lower_d and alt[0] <= upper_d

@@ -186,7 +186,7 @@ class Relation(Background):
         return max_np, max_mll
 
 
-def estimate_relation(pair, n, s, h0, ha, max_d):
+def estimate_relation(n, s, h0, ha, max_d, alpha):
     """
     Tests a pair of individuals for a relation and
     returns relevant parameters.
@@ -210,10 +210,10 @@ def estimate_relation(pair, n, s, h0, ha, max_d):
     d = max_alt[0] - 1
     max_LL = max_alt[2]
 
-    reject = LL_ratio_test(max_LL, null_LL)
+    reject = LL_ratio_test(max_LL, null_LL, alpha)
     lower_d, upper_d = 0, 0
     if reject:
-        lower_d, upper_d = likelihood_ratio_CI(alts, max_LL)
+        lower_d, upper_d = likelihood_ratio_CI(alts, max_LL, alpha)
         lower_d -= 1
         upper_d -= 1
 
