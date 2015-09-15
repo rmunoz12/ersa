@@ -29,7 +29,6 @@ def get_pair_dict(path):
             pair_dict[pair].append((seg.chrom, seg.bpStart, seg.bpEnd))
         else:
             pair_dict[pair] = [(seg.chrom, seg.bpStart, seg.bpEnd)]
-
     return pair_dict
 
 chrom_size = 10
@@ -74,14 +73,17 @@ def create_chrom_plot(pair_dict, chrom_dict, pair = "unspecified"):
 
     plt.show()
 
+def parse_and_plot(path, t, h):
+    pair_dict = get_pair_dict(path)
+    chrom_dict = get_chrom_lengths('autosomelengths.txt')
+    create_chrom_plot(pair_dict, chrom_dict)
+
 def main():
     args = sys.argv
 
     h = 10  #high thres (cM)
     t = 2.5
-    pair_dict = get_pair_dict(args[1])
-    chrom_dict = get_chrom_lengths('autosomelengths.txt')
-    create_chrom_plot(pair_dict, chrom_dict)
+    parse_and_plot(args[1], t, h)
 
 if __name__ == '__main__':
     main()
