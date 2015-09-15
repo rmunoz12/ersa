@@ -8,6 +8,7 @@
 #   GPL license
 
 from ersa.ersa_LL import *
+from ersa.ersa_LL import _n_to_ord, _n_to_w
 from ersa.parser import get_pair_dict
 import pytest
 from math import log
@@ -152,3 +153,22 @@ def test_potential_relationship():
     dob2 = 1998
     rel_est = potential_relationship(d_est, indv1, indv2, dob1, dob2)
     assert rel_est == ("Sibling", "Sibling")
+
+
+def test_n_to_ord():
+    assert _n_to_ord(1) == "1st"
+    assert _n_to_ord(2) == "2nd"
+    assert _n_to_ord(3) == "3rd"
+    assert _n_to_ord(4) == "4th"
+    assert _n_to_ord(22) == "22nd"
+    assert _n_to_ord(45) == "45th"
+    assert _n_to_ord(101) == "101st"
+
+def test_n_to_w():
+    assert _n_to_w(1) == "Once"
+    assert _n_to_w(2) == "Twice"
+    assert _n_to_w(3) == "Thrice"
+    assert _n_to_w(4) == "Four"
+    assert _n_to_w(7) == "Seven"
+    assert _n_to_w(10) == "Ten"
+    assert _n_to_w(10, capitalize=False) == "ten"

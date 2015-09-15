@@ -10,7 +10,7 @@
 from math import exp, log, factorial
 from operator import itemgetter
 from ersa.chisquare import LL_ratio_test, likelihood_ratio_CI
-
+import inflect
 
 class Background:
     """
@@ -252,6 +252,33 @@ def static_vars(**kwargs):
     return decorate
 
 
+def _n_to_ord(n):
+    """
+    Converts an integer n to an ordinal number (string).
+    """
+    assert type(n) == int
+    suffix = "th"
+    suffixes = {1: "st", 2: "nd", 3: "rd"}
+    i = n if n < 20 else n % 10
+    if i in suffixes:
+        suffix = suffixes[i]
+    return str(n) + suffix
+
+
+def _n_to_w(n, capitalize=True):
+    """
+    Converts an integer n to a (capitalized) word.
+    """
+    inflect_eng = inflect.engine()
+    s = inflect_eng.number_to_words(n)
+    excepts = {1: "once", 2: "twice", 3: "thrice"}
+    if n in excepts:
+        s = excepts[n]
+    if capitalize:
+        s = s.capitalize()
+    return s
+
+
 def _build_rel_map():
     """
     Helper function for potential_relationship() that
@@ -264,32 +291,39 @@ def _build_rel_map():
     rel_map = {1: {-1: "Parent", 1: "Child"},
                2: {-2: "Grandparent", 0: "Sibling", 2: "Grand Children"},
                3: {-3: "Great Grandparent", -1: "Aunt/Uncle", 1: "Niece/Nephew", 3: "Great-Grand Child"}}
-
     for d in range(4, 7 + 1):
         gen_bin = {}
         if d % 2:
-            # odd
-            pass
+            k = 1
         else:
-            gen_bin[0] = "{} Cousin".format(d // 2 - 1)
-            for i in range(2, d + 1, 2):
-                name = ""
-                name2 = ""
-                if i == d:
-                    name = "{} Great Grand".format(i - 2)
-                    name2 = name + "child"
-                    name += "parent"
-                elif i == d - 2:
-                    if i - 2 > 0:
-                        name = "{} Great ".format(i - 2)
-                    name2 = name + "Grand Niece/Nephew"
-                    name += "Grand Aunt/Uncle"
-                else:
-                    name = "{} Cousins ".format(d // 2 - 1 - i // 2)
-                    name += "{}x Removed".format(i)
-                    name2 = name
-                gen_bin[-i] = name
-                gen_bin[i] = name2
+            k = 2
+            gen_bin[0] = _n_to_ord(d // 2 - 1) + " Cousin"
+        for i in range(k, d + 1, 2):
+            name = ""
+            name2 = ""
+            if i == d:
+                name = _n_to_ord(i - 2)
+                name += " Great Grand"
+                name2 = name + "child"
+                name += "parent"
+            elif i == d - 2:
+                if i - 2 > 0:
+                    if i - 2 > 1:
+                        name = _n_to_ord(i - 2)
+                        name += " "
+                    name += "Great "
+                name2 = name + "Grand Niece/Nephew"
+                name += "Grand Aunt/Uncle"
+            else:
+                name = _n_to_ord(d // 2 - 1 - i // 2)
+                name += " Cousins "
+                name += "{} ".format(_n_to_w(i))
+                if i > 3:
+                    name += "Times"
+                name += "Removed"
+                name2 = name
+            gen_bin[-i] = name
+            gen_bin[i] = name2
         rel_map[d] = gen_bin
 
     return rel_map
