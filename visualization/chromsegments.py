@@ -34,6 +34,8 @@ def get_pair_dict(path):
 chrom_size = 10
 chrom_sep = 5
 num_autosomes = 22
+bp_limit = 3e8
+bp_increment = 4e7
 def create_chrom_plot(pair_dict, chrom_dict, pair = "unspecified"):
     fig = plt.figure()
     ax = fig.add_subplot(111)
@@ -62,13 +64,13 @@ def create_chrom_plot(pair_dict, chrom_dict, pair = "unspecified"):
         ax.broken_barh(segs, (-1 * (chrom_sep + (chrom_size + chrom_sep) * (chrom - 1)), -chrom_size), facecolors='blue')
 
     # limit chrom borders (y-axis)
-    ax.set_ylim(-1 * (chrom_sep + 22 * (chrom_sep + chrom_size)), 0)
+    ax.set_ylim(-1 * (chrom_sep + num_autosomes * (chrom_sep + chrom_size)), 0)
     ax.set_yticks(np.arange(-1 * (chrom_sep + chrom_size / 2), -1 * num_autosomes * (chrom_sep + chrom_size), -1 * (chrom_sep + chrom_size)))
-    ax.set_yticklabels(range(1, 23))
+    ax.set_yticklabels(range(1, num_autosomes + 1))
     ax.set_ylabel('Chromosome Number')
 
-    ax.set_xticks(np.arange(0, 3e8, 4e7))
-    ax.set_xticklabels(np.arange(0, 3e2, 4e1))
+    ax.set_xticks(np.arange(0, bp_limit, bp_increment))
+    ax.set_xticklabels(np.arange(0, bp_limit/1e6, bp_increment/1e6))
     ax.set_xlabel('Chromosome Length (Mbp)')
 
     plt.show()
