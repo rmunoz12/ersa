@@ -289,8 +289,8 @@ def _build_rel_map():
     https://en.wikipedia.org/wiki/File:Table_of_Consanguinity_showing_degrees_of_relationship.png
     """
     rel_map = {1: {-1: "Parent", 1: "Child"},
-               2: {-2: "Grandparent", 0: "Sibling", 2: "Grand Children"},
-               3: {-3: "Great Grandparent", -1: "Aunt/Uncle", 1: "Niece/Nephew", 3: "Great-Grand Child"}}
+               2: {-2: "Grandparent", 0: "Sibling", 2: "Grandchild"},
+               3: {-3: "Great Grandparent", -1: "Aunt/Uncle", 1: "Niece/Nephew", 3: "Great Grandchild"}}
     for d in range(4, 7 + 1):
         gen_bin = {}
         if d % 2:
@@ -300,23 +300,23 @@ def _build_rel_map():
             gen_bin[0] = _n_to_ord(d // 2 - 1) + " Cousin"
         for i in range(k, d + 1, 2):
             name = ""
-            name2 = ""
             if i == d:
                 name = _n_to_ord(i - 2)
                 name += " Great Grand"
                 name2 = name + "child"
                 name += "parent"
             elif i == d - 2:
+                if i - 2 > 1:
+                    name = _n_to_ord(i - 2)
+                    name += " "
+                name += "Great "
                 if i - 2 > 0:
-                    if i - 2 > 1:
-                        name = _n_to_ord(i - 2)
-                        name += " "
-                    name += "Great "
-                name2 = name + "Grand Niece/Nephew"
-                name += "Grand Aunt/Uncle"
+                    name += "Grand "
+                name2 = name + "Niece/Nephew"
+                name += "Aunt/Uncle"
             else:
                 name = _n_to_ord(d // 2 - 1 - i // 2)
-                name += " Cousins "
+                name += " Cousin "
                 name += "{} ".format(_n_to_w(i))
                 if i > 3:
                     name += "Times"

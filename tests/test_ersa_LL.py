@@ -140,19 +140,32 @@ def test_estimate_relation():
 
 
 def test_potential_relationship():
-    d_est = 1
-    indv1 = "TestA"
-    indv2 = "TestB"
-    dob1 = 1954
-    dob2 = 1991
-    rel_est = potential_relationship(d_est, indv1, indv2, dob1, dob2)
+    indv1 = "A"
+    indv2 = "B"
+
+    rel_est = potential_relationship(1, indv1, indv2, 1957, 1991)
     assert rel_est == ("Child", "Parent")
 
-    d_est = 2
-    dob1 = 1991
-    dob2 = 1998
-    rel_est = potential_relationship(d_est, indv1, indv2, dob1, dob2)
+    rel_est = potential_relationship(2, indv1, indv2, 1998, 1991)
     assert rel_est == ("Sibling", "Sibling")
+
+    rel_est = potential_relationship(2, indv1, indv2, 1998, 1940)
+    assert rel_est == ("Grandparent", "Grandchild")
+
+    rel_est = potential_relationship(3, indv1, indv2, 1998, 1940)
+    assert rel_est is None
+
+    rel_est = potential_relationship(4, indv1, indv2, 1998, 1940)
+    assert rel_est == ("Great Aunt/Uncle", "Great Niece/Nephew")
+
+    rel_est = potential_relationship(4, indv1, indv2, 1938, 1940)
+    assert rel_est == ("1st Cousin", "1st Cousin")
+
+    rel_est = potential_relationship(7, indv1, indv2, 1900, 1975)
+    assert rel_est == ("1st Cousin Thrice Removed", "1st Cousin Thrice Removed")
+
+    rel_est = potential_relationship(5, indv1, indv2, 1900, 2035)
+    assert rel_est == ("3rd Great Grandchild", "3rd Great Grandparent")
 
 
 def test_n_to_ord():
