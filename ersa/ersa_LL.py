@@ -234,3 +234,89 @@ def estimate_relation(n, s, h0, ha, max_d, alpha):
 
     est = Estimate(d, reject, null_LL, max_LL, lower_d, upper_d, None, s)
     return est
+
+
+def static_vars(**kwargs):
+    """
+    Decorator for adding static variables to functions.
+
+    Reference
+    ---------
+    Answer by Claudiu and ony at:
+    http://stackoverflow.com/questions/279561/what-is-the-python-equivalent-of-static-variables-inside-a-function
+    """
+    def decorate(func):
+        for k in kwargs:
+            setattr(func, k, kwargs[k])
+        return func
+    return decorate
+
+
+def _build_rel_map():
+    """
+    Helper function for potential_relationship() that
+    builds the static relationship/consanguinity map.
+
+    References
+    ----------
+    https://en.wikipedia.org/wiki/File:Table_of_Consanguinity_showing_degrees_of_relationship.png
+    """
+    rel_map = {1: {-1: "Parent", 1: "Child"},
+               2: {-2: "Grandparent", 0: "Sibling", 2: "Grand Children"},
+               3: {-3: "Great Grandparent", -1: "Aunt/Uncle", 1: "Niece/Nephew", 3: "Great-Grand Child"}}
+
+    for d in range(4, 7 + 1):
+        gen_bin = {}
+        if d % 2:
+            # odd
+            pass
+        else:
+            gen_bin[0] = "{} Cousin".format(d // 2 - 1)
+            for i in range(2, d + 1, 2):
+                name = ""
+                name2 = ""
+                if i == d:
+                    name = "{} Great Grand".format(i - 2)
+                    name2 = name + "child"
+                    name += "parent"
+                elif i == d - 2:
+                    if i - 2 > 0:
+                        name = "{} Great ".format(i - 2)
+                    name2 = name + "Grand Niece/Nephew"
+                    name += "Grand Aunt/Uncle"
+                else:
+                    name = "{} Cousins ".format(d // 2 - 1 - i // 2)
+                    name += "{}x Removed".format(i)
+                    name2 = name
+                gen_bin[-i] = name
+                gen_bin[i] = name2
+        rel_map[d] = gen_bin
+
+    return rel_map
+
+
+@static_vars(rel_map=_build_rel_map())
+def potential_relationship(d_est, indv1, indv2, dob1, dob2):
+    """
+    Estimates a potential consanguinity between two individuals,
+    based on assumption 30 years between generations, centered
+    at dob1.
+
+    Returns
+    -------
+    A tuple with the first value from the perspective
+    of indv1 and the second value from the perspective of
+    indv2.
+    """
+    yr_per_gen = 30
+    delta = dob2 - dob1
+    gen_bin = (delta + yr_per_gen / 2) // yr_per_gen
+    if d_est not in potential_relationship.rel_map:
+        return None
+    if gen_bin not in potential_relationship.rel_map[d_est]:
+        return None
+    else:
+        bin_map = potential_relationship.rel_map[d_est]
+    return bin_map[gen_bin], bin_map[-gen_bin]
+
+

@@ -7,7 +7,7 @@
 #   GPL license
 
 
-from ersa.ersa_LL import Background, Relation, estimate_relation
+from ersa.ersa_LL import Background, Relation, estimate_relation, potential_relationship
 from ersa.parser import get_pair_dict
 from time import time
 from sys import stdout
@@ -61,16 +61,21 @@ def main():
     else:
         output_file = stdout
 
-    print("{:<10} {:<10} {:<10} {:<11} {:<10} {:<10} {:<10} {:<10}"
-          .format(
-          "Indv_1", "Indv_2", "Number_Gen", "Reject_Null", "LLn", "Llr", "lower_d_CI", "upper_d_CI"),
+    print("{:<10} {:<10} {:>10} {:<10} {:>10} {:>10}"
+          .format("Indv_1", "Indv_2", "d_est", "Rel_est", "N_seg", "Tot_cM"),
           file=output_file)
     
     for pair, (n, s) in pair_dict.items():
+        dob = (None, None)
         est = estimate_relation(n, s, h0, ha, args.dmax, args.alpha)
         pair1, pair2 = pair.split(':')
-        print("{:<10} {:<10} {:10} {!r:>11} {:10,.3f} {:10,.3f} {:10} {:10}"
-              .format(pair1, pair2, est.d, est.reject, est.null_LL, est.max_LL, est.lower_d, est.upper_d),
+        d_est = est.d if est.reject else "NA"
+        if est.reject and dob[0] and dob[1]:
+            rel_est = potential_relationship(pair1, pair2, dob[0], dob[1])
+        else:
+            rel_est = "NA"
+        print("{:<10} {:<10} {:>10} {:10} {:10} {:10,.2f}"
+              .format(pair1, pair2, d_est, rel_est, n, sum(s)),
               file=output_file)
 
     print("--- {} seconds ---".format(round(time() - start_time, 3)))

@@ -136,3 +136,19 @@ def test_estimate_relation():
             assert est.d == 9
             assert est.lower_d == 7
             assert est.upper_d == 9
+
+
+def test_potential_relationship():
+    d_est = 1
+    indv1 = "TestA"
+    indv2 = "TestB"
+    dob1 = 1954
+    dob2 = 1991
+    rel_est = potential_relationship(d_est, indv1, indv2, dob1, dob2)
+    assert rel_est == ("Child", "Parent")
+
+    d_est = 2
+    dob1 = 1991
+    dob2 = 1998
+    rel_est = potential_relationship(d_est, indv1, indv2, dob1, dob2)
+    assert rel_est == ("Sibling", "Sibling")
