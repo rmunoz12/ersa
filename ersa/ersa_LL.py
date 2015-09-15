@@ -186,6 +186,21 @@ class Relation(Background):
         return max_np, max_mll
 
 
+class Estimate:
+    """
+    Structure to hold results from estimate_relation
+    """
+    def __init__(self, d, reject, null_LL, max_LL, lower_d, upper_d, LLr_list, s):
+        self.d = d
+        self.reject = reject
+        self.LLr_list = LLr_list
+        self.s = s
+        self.null_LL = null_LL
+        self.max_LL = max_LL
+        self.lower_d = lower_d
+        self.upper_d = upper_d
+
+
 def estimate_relation(n, s, h0, ha, max_d, alpha):
     """
     Tests a pair of individuals for a relation and
@@ -207,7 +222,7 @@ def estimate_relation(n, s, h0, ha, max_d, alpha):
         alt_np, alt_MLL = ha.MLL(n, s, d)
         alts.append((d, alt_np, alt_MLL))
     max_alt = max(alts, key=itemgetter(2))
-    d = max_alt[0] - 1
+    d = max_alt[0] - 1  # subtract one from d based on a = 2
     max_LL = max_alt[2]
 
     reject = LL_ratio_test(max_LL, null_LL, alpha)
@@ -217,5 +232,5 @@ def estimate_relation(n, s, h0, ha, max_d, alpha):
         lower_d -= 1
         upper_d -= 1
 
-    # subtract one from d based on a = 2
-    return null_LL, max_LL, d, reject, lower_d, upper_d
+    est = Estimate(d, reject, null_LL, max_LL, lower_d, upper_d, None, s)
+    return est

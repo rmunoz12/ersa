@@ -120,18 +120,19 @@ def test_estimate_relation():
     h0 = Background(t, theta, lambda_)
     ha = Relation(c, r, t, theta, lambda_)
     for pair, (n, s) in pair_dict.items():
-        LLn, LLr, d, reject, low_d, upp_d = estimate_relation(n, s, h0, ha, MAX_D, alpha)
+
+        est = estimate_relation(n, s, h0, ha, MAX_D, alpha)
         if pair == 'TestA:TestB':
-            assert LLn == -78.07341166722982
-            assert LLr == -30.584814485465674
-            assert reject
-            assert d == 7
-            assert low_d == 6
-            assert upp_d == 9
+            assert est.null_LL == -78.07341166722982
+            assert est.max_LL == -30.584814485465674
+            assert est.reject
+            assert est.d == 7
+            assert est.lower_d == 6
+            assert est.upper_d == 9
         if pair == 'TestB:TestC':
-            assert LLn == -31.873042343537115
-            assert LLr == -15.445177211112602
-            assert reject
-            assert d == 9
-            assert low_d == 7
-            assert upp_d == 9
+            assert est.null_LL == -31.873042343537115
+            assert est.max_LL == -15.445177211112602
+            assert est.reject
+            assert est.d == 9
+            assert est.lower_d == 7
+            assert est.upper_d == 9
