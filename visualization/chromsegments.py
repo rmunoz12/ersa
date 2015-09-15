@@ -73,10 +73,10 @@ def create_chrom_plot(pair_dict, chrom_dict, pair = "unspecified"):
 
     plt.show()
 
-def parse_and_plot(path, t, h):
+def parse_and_plot(path, t, h, pair = "unspecified"):
     pair_dict = get_pair_dict(path)
     chrom_dict = get_chrom_lengths('autosomelengths.txt')
-    create_chrom_plot(pair_dict, chrom_dict)
+    create_chrom_plot(pair_dict, chrom_dict, pair)
 
 def main():
     args = sys.argv
