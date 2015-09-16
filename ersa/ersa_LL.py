@@ -10,7 +10,7 @@
 from math import exp, log, factorial
 from operator import itemgetter
 from ersa.chisquare import LL_ratio_test, likelihood_ratio_CI
-
+import inflect
 
 class Background:
     """
@@ -186,6 +186,21 @@ class Relation(Background):
         return max_np, max_mll
 
 
+class Estimate:
+    """
+    Structure to hold results from estimate_relation
+    """
+    def __init__(self, d, reject, null_LL, max_LL, lower_d, upper_d, alts, s):
+        self.d = d
+        self.reject = reject
+        self.alts = alts
+        self.s = s
+        self.null_LL = null_LL
+        self.max_LL = max_LL
+        self.lower_d = lower_d
+        self.upper_d = upper_d
+
+
 def estimate_relation(n, s, h0, ha, max_d, alpha):
     """
     Tests a pair of individuals for a relation and
@@ -205,17 +220,135 @@ def estimate_relation(n, s, h0, ha, max_d, alpha):
     alts = []
     for d in range(1, max_d + 1):
         alt_np, alt_MLL = ha.MLL(n, s, d)
-        alts.append((d, alt_np, alt_MLL))
+        alts.append((d - 1, alt_np, alt_MLL))  # subtract one from d since a = 2
     max_alt = max(alts, key=itemgetter(2))
-    d = max_alt[0] - 1
+    d = max_alt[0]
     max_LL = max_alt[2]
 
     reject = LL_ratio_test(max_LL, null_LL, alpha)
     lower_d, upper_d = 0, 0
     if reject:
         lower_d, upper_d = likelihood_ratio_CI(alts, max_LL, alpha)
-        lower_d -= 1
-        upper_d -= 1
 
-    # subtract one from d based on a = 2
-    return null_LL, max_LL, d, reject, lower_d, upper_d
+    est = Estimate(d, reject, null_LL, max_LL, lower_d, upper_d, alts, s)
+    return est
+
+
+def _static_vars(**kwargs):
+    """
+    Decorator for adding static variables to functions.
+
+    Reference
+    ---------
+    Answer by Claudiu and ony at:
+    http://stackoverflow.com/questions/279561/what-is-the-python-equivalent-of-static-variables-inside-a-function
+    """
+    def decorate(func):
+        for k in kwargs:
+            setattr(func, k, kwargs[k])
+        return func
+    return decorate
+
+
+def _n_to_ord(n):
+    """
+    Converts an integer n to an ordinal number (string).
+    """
+    assert type(n) == int
+    suffix = "th"
+    suffixes = {1: "st", 2: "nd", 3: "rd"}
+    i = n if n < 20 else n % 10
+    if i in suffixes:
+        suffix = suffixes[i]
+    return str(n) + suffix
+
+
+def _n_to_w(n, capitalize=True):
+    """
+    Converts an integer n to a (capitalized) word.
+    """
+    inflect_eng = inflect.engine()
+    s = inflect_eng.number_to_words(n)
+    excepts = {1: "once", 2: "twice", 3: "thrice"}
+    if n in excepts:
+        s = excepts[n]
+    if capitalize:
+        s = s.capitalize()
+    return s
+
+
+def _build_rel_map():
+    """
+    Helper function for potential_relationship() that
+    builds the static relationship/consanguinity map.
+
+    References
+    ----------
+    https://en.wikipedia.org/wiki/File:Table_of_Consanguinity_showing_degrees_of_relationship.png
+    """
+    rel_map = {1: {-1: "Parent", 1: "Child"},
+               2: {-2: "Grandparent", 0: "Sibling", 2: "Grandchild"},
+               3: {-3: "Great Grandparent", -1: "Aunt/Uncle", 1: "Niece/Nephew", 3: "Great Grandchild"}}
+    for d in range(4, 7 + 1):
+        gen_bin = {}
+        if d % 2:
+            k = 1
+        else:
+            k = 2
+            gen_bin[0] = _n_to_ord(d // 2 - 1) + " Cousin"
+        for i in range(k, d + 1, 2):
+            name = ""
+            if i == d:
+                name = _n_to_ord(i - 2)
+                name += " Great Grand"
+                name2 = name + "child"
+                name += "parent"
+            elif i == d - 2:
+                if i - 2 > 1:
+                    name = _n_to_ord(i - 2)
+                    name += " "
+                name += "Great "
+                if i - 2 > 0:
+                    name += "Grand "
+                name2 = name + "Niece/Nephew"
+                name += "Aunt/Uncle"
+            else:
+                name = _n_to_ord(d // 2 - 1 - i // 2)
+                name += " Cousin "
+                name += "{} ".format(_n_to_w(i))
+                if i > 3:
+                    name += "Times"
+                name += "Removed"
+                name2 = name
+            gen_bin[-i] = name
+            gen_bin[i] = name2
+        rel_map[d] = gen_bin
+
+    return rel_map
+
+
+@_static_vars(rel_map=_build_rel_map())
+def potential_relationship(d_est, indv1, indv2, dob1, dob2):
+    """
+    Estimates a potential consanguinity between two individuals,
+    based on assumption 30 years between generations, centered
+    at dob1.
+
+    Returns
+    -------
+    A tuple with the first value from the perspective
+    of indv1 and the second value from the perspective of
+    indv2.
+    """
+    yr_per_gen = 30
+    delta = dob2 - dob1
+    gen_bin = (delta + yr_per_gen / 2) // yr_per_gen
+    if d_est not in potential_relationship.rel_map:
+        return None
+    if gen_bin not in potential_relationship.rel_map[d_est]:
+        return None
+    else:
+        bin_map = potential_relationship.rel_map[d_est]
+    return bin_map[gen_bin], bin_map[-gen_bin]
+
+

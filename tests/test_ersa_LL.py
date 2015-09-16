@@ -8,6 +8,7 @@
 #   GPL license
 
 from ersa.ersa_LL import *
+from ersa.ersa_LL import _n_to_ord, _n_to_w
 from ersa.parser import get_pair_dict
 import pytest
 from math import log
@@ -120,18 +121,67 @@ def test_estimate_relation():
     h0 = Background(t, theta, lambda_)
     ha = Relation(c, r, t, theta, lambda_)
     for pair, (n, s) in pair_dict.items():
-        LLn, LLr, d, reject, low_d, upp_d = estimate_relation(n, s, h0, ha, MAX_D, alpha)
+
+        est = estimate_relation(n, s, h0, ha, MAX_D, alpha)
         if pair == 'TestA:TestB':
-            assert LLn == -78.07341166722982
-            assert LLr == -30.584814485465674
-            assert reject
-            assert d == 7
-            assert low_d == 6
-            assert upp_d == 9
+            assert est.null_LL == -78.07341166722982
+            assert est.max_LL == -30.584814485465674
+            assert est.reject
+            assert est.d == 7
+            assert est.lower_d == 6
+            assert est.upper_d == 9
         if pair == 'TestB:TestC':
-            assert LLn == -31.873042343537115
-            assert LLr == -15.445177211112602
-            assert reject
-            assert d == 9
-            assert low_d == 7
-            assert upp_d == 9
+            assert est.null_LL == -31.873042343537115
+            assert est.max_LL == -15.445177211112602
+            assert est.reject
+            assert est.d == 9
+            assert est.lower_d == 7
+            assert est.upper_d == 9
+
+
+def test_potential_relationship():
+    indv1 = "A"
+    indv2 = "B"
+
+    rel_est = potential_relationship(1, indv1, indv2, 1957, 1991)
+    assert rel_est == ("Child", "Parent")
+
+    rel_est = potential_relationship(2, indv1, indv2, 1998, 1991)
+    assert rel_est == ("Sibling", "Sibling")
+
+    rel_est = potential_relationship(2, indv1, indv2, 1998, 1940)
+    assert rel_est == ("Grandparent", "Grandchild")
+
+    rel_est = potential_relationship(3, indv1, indv2, 1998, 1940)
+    assert rel_est is None
+
+    rel_est = potential_relationship(4, indv1, indv2, 1998, 1940)
+    assert rel_est == ("Great Aunt/Uncle", "Great Niece/Nephew")
+
+    rel_est = potential_relationship(4, indv1, indv2, 1938, 1940)
+    assert rel_est == ("1st Cousin", "1st Cousin")
+
+    rel_est = potential_relationship(7, indv1, indv2, 1900, 1975)
+    assert rel_est == ("1st Cousin Thrice Removed", "1st Cousin Thrice Removed")
+
+    rel_est = potential_relationship(5, indv1, indv2, 1900, 2035)
+    assert rel_est == ("3rd Great Grandchild", "3rd Great Grandparent")
+
+
+def test_n_to_ord():
+    assert _n_to_ord(1) == "1st"
+    assert _n_to_ord(2) == "2nd"
+    assert _n_to_ord(3) == "3rd"
+    assert _n_to_ord(4) == "4th"
+    assert _n_to_ord(22) == "22nd"
+    assert _n_to_ord(45) == "45th"
+    assert _n_to_ord(101) == "101st"
+
+def test_n_to_w():
+    assert _n_to_w(1) == "Once"
+    assert _n_to_w(2) == "Twice"
+    assert _n_to_w(3) == "Thrice"
+    assert _n_to_w(4) == "Four"
+    assert _n_to_w(7) == "Seven"
+    assert _n_to_w(10) == "Ten"
+    assert _n_to_w(10, capitalize=False) == "ten"
