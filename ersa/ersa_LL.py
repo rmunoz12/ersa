@@ -190,10 +190,10 @@ class Estimate:
     """
     Structure to hold results from estimate_relation
     """
-    def __init__(self, d, reject, null_LL, max_LL, lower_d, upper_d, LLr_list, s):
+    def __init__(self, d, reject, null_LL, max_LL, lower_d, upper_d, alts, s):
         self.d = d
         self.reject = reject
-        self.LLr_list = LLr_list
+        self.alts = alts
         self.s = s
         self.null_LL = null_LL
         self.max_LL = max_LL
@@ -220,23 +220,21 @@ def estimate_relation(n, s, h0, ha, max_d, alpha):
     alts = []
     for d in range(1, max_d + 1):
         alt_np, alt_MLL = ha.MLL(n, s, d)
-        alts.append((d, alt_np, alt_MLL))
+        alts.append((d - 1, alt_np, alt_MLL))  # subtract one from d since a = 2
     max_alt = max(alts, key=itemgetter(2))
-    d = max_alt[0] - 1  # subtract one from d based on a = 2
+    d = max_alt[0]
     max_LL = max_alt[2]
 
     reject = LL_ratio_test(max_LL, null_LL, alpha)
     lower_d, upper_d = 0, 0
     if reject:
         lower_d, upper_d = likelihood_ratio_CI(alts, max_LL, alpha)
-        lower_d -= 1
-        upper_d -= 1
 
-    est = Estimate(d, reject, null_LL, max_LL, lower_d, upper_d, None, s)
+    est = Estimate(d, reject, null_LL, max_LL, lower_d, upper_d, alts, s)
     return est
 
 
-def static_vars(**kwargs):
+def _static_vars(**kwargs):
     """
     Decorator for adding static variables to functions.
 
@@ -329,7 +327,7 @@ def _build_rel_map():
     return rel_map
 
 
-@static_vars(rel_map=_build_rel_map())
+@_static_vars(rel_map=_build_rel_map())
 def potential_relationship(d_est, indv1, indv2, dob1, dob2):
     """
     Estimates a potential consanguinity between two individuals,

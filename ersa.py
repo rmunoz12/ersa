@@ -66,7 +66,7 @@ def main():
           file=output_file)
     
     for pair, (n, s) in pair_dict.items():
-        dob = (None, None)
+        dob = (None, None)  # TODO get dob from file
         est = estimate_relation(n, s, h0, ha, args.dmax, args.alpha)
         pair1, pair2 = pair.split(':')
         d_est = est.d if est.reject else "NA"
