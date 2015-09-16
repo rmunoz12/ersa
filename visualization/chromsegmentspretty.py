@@ -71,7 +71,7 @@ def create_pretty_chrom_plot(pair_dict, chrom_dict, xdim = 1024, ydim = 1024, pa
         draw_chromosome(input, x1, y1, x2, y2, cent_frac)
 
         # print chrom label
-        draw.text((x2 + chrom_sep, y1), 'chrom ' + str(chrom), 'black', font = chrom_font)
+        draw.text((x2 + chrom_sep/2, y1), str(chrom), 'black', font = chrom_font)
 
         # draw shared segments on chromosomes
         segs = []
