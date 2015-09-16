@@ -60,8 +60,8 @@ def main():
     else:
         output_file = stdout
 
-    print("{:<10} {:<10} {:>10} {:<10} {:>10} {:>10}"
-          .format("Indv_1", "Indv_2", "d_est", "Rel_est", "N_seg", "Tot_cM"),
+    print("{:<20} {:<20} {:<10} {:>10} {:>10} {:>10}"
+          .format("Indv_1", "Indv_2", "Rel_est", "d_est", "N_seg", "Tot_cM"),
           file=output_file)
     
     for pair, (n, s) in pair_dict.items():
@@ -73,8 +73,8 @@ def main():
             rel_est = potential_relationship(pair1, pair2, dob[0], dob[1])
         else:
             rel_est = "NA"
-        print("{:<10} {:<10} {:>10} {:10} {:10} {:10,.2f}"
-              .format(pair1, pair2, d_est, rel_est, n, sum(s)),
+        print("{:<20} {:<20} {:10} {:>10} {:10} {:10,.2f}"
+              .format(pair1, pair2, rel_est, d_est, n, sum(s)),
               file=output_file)
 
     print("--- {} seconds ---".format(round(time() - start_time, 3)))
