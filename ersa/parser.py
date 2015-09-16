@@ -50,26 +50,27 @@ def read_matchfile(path):
     return s_list
 
 
-def get_pair_dict(path, t, h):
+def get_pair_dict(path, t, user=None):
     """
     Reads and collapses the input data into a dictionary with entries:
 
     {pair_id: (n, s)}
 
-    Filters to segments in the range >t and <h
+    Filters to segments in the range >t and, if specified, by User.
 
     pair_id = unique id for each pair of individuals compared
     n = number of shared segments
     s = list of shared segment lengths (in cM)
-    t, h = low, high thresholds to filter by (in cM)
+    t = low threshold to filter by (in cM)
     """
     s_list = read_matchfile(path)
     pair_dict = {}
-    for seg in s_list:
+    for seg in s_list:  # TODO need to lower memory footprint for s_list
         assert isinstance(seg, SharedSegment)
         assert seg.lengthUnit == "cM"  # TODO add conversion to cM instead of assertion
-
         if seg.length < t:  # Note: seg.length > h filtered only for background parameters
+            continue
+        if user and seg.indivID1 != user and seg.indivID2 != user:
             continue
 
         pair_id = seg.indivID1

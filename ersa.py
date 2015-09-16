@@ -14,9 +14,6 @@ from sys import stdout
 from argparse import ArgumentParser
 
 
-"""Default parameter values"""
-h = 10                  # in cM
-
 def get_args():
     p = ArgumentParser(description="estimate combined number of generations between pairs of individuals")
     p.add_argument("matchfile", help="input match file")
@@ -33,6 +30,8 @@ def get_args():
                    type=float, default=35.2548101)
     p.add_argument("-t", help="min segment length (in cM) to include in comparisons (default %(default).1f)",
                    type=float, default=2.5)
+    p.add_argument("-u", "--user", help="filter input file to only look at USER",
+                   type=str)
     p.add_argument("-th", "--theta", help="mean shared segment length (in cM) in the population (default %(default).3f)",
                    type=float, default=3.197036753)
 
@@ -46,7 +45,7 @@ def main():
 
     print("--- Reading match file ---")
 
-    pair_dict = get_pair_dict(args.matchfile, args.t, h)
+    pair_dict = get_pair_dict(args.matchfile, args.t, args.user)
 
     h0 = Background(args.t, args.theta, args.l)
     ha = Relation(args.c, args.r, args.t, args.theta, args.l)
