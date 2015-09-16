@@ -21,11 +21,12 @@ def test_SharedSegment():
 
 
 def test_read_matchfile():
-    with pytest.raises(FileNotFoundError):
-        read_matchfile("")
     path = "tests/test_data/test_LL.match"
     s_list = read_matchfile(path)
-    assert len(s_list) == 14
+    len = 0
+    for s in s_list:
+        len += 1
+    assert len == 14
 
 
 def test_get_pair_dict():

@@ -39,15 +39,13 @@ class SharedSegment:
 
 def read_matchfile(path):
     """
-    Reads a match file at path and returns a list of SharedSegments.
+    Reads a match file at path and returns a generator that yields SharedSegments.
     """
-    s_list, lines = [], []
     with open(path) as matchfile:
-        lines = [[val for val in line.split()] for line in matchfile]
-    for line in lines:
-        segment = SharedSegment(line)
-        s_list.append(segment)
-    return s_list
+        for line in matchfile:
+            split_line = [val for val in line.split()]
+            segment = SharedSegment(split_line)
+            yield segment
 
 
 def get_pair_dict(path, t, user=None):
@@ -65,7 +63,7 @@ def get_pair_dict(path, t, user=None):
     """
     s_list = read_matchfile(path)
     pair_dict = {}
-    for seg in s_list:  # TODO need to lower memory footprint for s_list
+    for seg in s_list:
         assert isinstance(seg, SharedSegment)
         assert seg.lengthUnit == "cM"  # TODO add conversion to cM instead of assertion
         if seg.length < t:  # Note: seg.length > h filtered only for background parameters
