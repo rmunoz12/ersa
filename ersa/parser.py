@@ -16,6 +16,8 @@ class SharedSegment:
     http://www1.cs.columbia.edu/~gusev/germline/
 
     Assumes that each value in the inputed param_list is a string.
+
+    SharedSegments are ordered by the length parameter.
     """
     def __init__(self, param_list):
         assert type(param_list) == list
@@ -36,6 +38,9 @@ class SharedSegment:
         # self.ind1homozygous = int(param_list[13])
         # self.ind2homozygous = int(param_list[14])
 
+    def __lt__(self, other):
+        return self.length < other.length
+
 
 def read_matchfile(path):
     """
@@ -50,15 +55,13 @@ def read_matchfile(path):
 
 def get_pair_dict(path, t, user=None):
     """
-    Reads and collapses the input data into a dictionary with entries:
+    Reads from path and collapses the input data into a dictionary with entries:
 
-    {pair_id: (n, s)}
+    {pair_id: [list of SharedSegments]}
 
-    Filters to segments in the range >t and, if specified, by User.
+    Filters to segments in the range >t and, if specified, by user.
 
     pair_id = unique id for each pair of individuals compared
-    n = number of shared segments
-    s = list of shared segment lengths (in cM)
     t = low threshold to filter by (in cM)
     """
     s_list = read_matchfile(path)
@@ -77,14 +80,11 @@ def get_pair_dict(path, t, user=None):
         else:
             pair_id = seg.indivID2 + ":" + pair_id
         if pair_dict.get(pair_id):
-            n = pair_dict[pair_id][0] + 1
-            shared_segs = pair_dict[pair_id][1]
-            shared_segs.append(seg.length)
-            pair_dict[pair_id] = (n, shared_segs)
+            pair_dict[pair_id].append(seg)
         else:
-            pair_dict[pair_id] = (1, [seg.length])
+            pair_dict[pair_id] = [seg]
 
     for k, v in pair_dict.items():
-        v[1].sort()
+        v.sort()
 
     return pair_dict

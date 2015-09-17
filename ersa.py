@@ -65,8 +65,10 @@ def main():
               .format("Indv_1", "Indv_2", "Rel_est", "d_est", "N_seg", "Tot_cM"),
               file=output_file)
 
-    for pair, (n, s) in pair_dict.items():
+    for pair, seg_list in pair_dict.items():
         dob = (None, None)  # TODO get dob from file
+        s = [seg.length for seg in seg_list]
+        n = len(s)
         est = estimate_relation(pair, dob, n, s, h0, ha, args.dmax, args.alpha)
         pair1, pair2 = pair.split(':')
         d_est = est.d if est.reject else "NA"

@@ -32,9 +32,9 @@ def test_read_matchfile():
 def test_get_pair_dict():
     path = "tests/test_data/test_LL.match"
     pair_dict = get_pair_dict(path, 2.5)
-    assert pair_dict['TestA:TestB'][0] == 7
+    assert len(pair_dict['TestA:TestB']) == 7
 
     pair_dict = get_pair_dict(path, 2.5, "TestA")
     with pytest.raises(KeyError):
-        assert pair_dict['TestB:TestC'][0] == 9
+        assert len(pair_dict['TestB:TestC']) == 9
 
