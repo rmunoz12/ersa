@@ -77,7 +77,7 @@ def main():
         else:
             rel_est = "NA"
         if args.D:
-            dbhandler.insert(args.D, est)
+            dbhandler.insert(args.D, est, seg_list)
         else:
             print("{:<20} {:<20} {:10} {:>10} {:10} {:10,.2f}"
                   .format(pair1, pair2, rel_est, d_est, n, sum(s)),

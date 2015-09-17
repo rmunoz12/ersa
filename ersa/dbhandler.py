@@ -13,6 +13,7 @@ from sqlalchemy.orm import relationship, sessionmaker, backref
 from sqlalchemy import create_engine
 from sqlalchemy_utils import database_exists
 from ersa.ersa_LL import Estimate
+from ersa.parser import SharedSegment
 
 Base = declarative_base()
 
@@ -46,8 +47,8 @@ class Segment(Base):
     result_id = Column(Integer, ForeignKey('result.id'))
     result = relationship(Result, backref=backref('segments', uselist=True))
     chromosome = Column(Integer, nullable=False)
-    start_bp = Column(Integer, nullable=False)
-    end_bp = Column(Integer, nullable=False)
+    bp_start = Column(Integer, nullable=False)
+    bp_end = Column(Integer, nullable=False)
 
 
 def _init_db(url):
@@ -67,8 +68,9 @@ def _connect(url):
     return session
 
 
-def insert(url, est):
+def insert(url, est, seg_list):
     assert isinstance(est, Estimate)
+    assert isinstance(seg_list[0], SharedSegment)
     session = _connect(url)
 
     d_est = est.d if est.reject else None
@@ -82,6 +84,10 @@ def insert(url, est):
         new_LL.result = res
         session.add(new_LL)
 
+    for seg in seg_list:
+        new_seg = Segment(chromosome=seg.chrom, bp_start=seg.bpStart, bp_end=seg.bpEnd)
+        new_seg.result = res
+
     session.commit()
 
 
@@ -91,9 +97,3 @@ def clear_all(url):
     session.query(Likelihood).delete()
     session.query(Segment).delete()
     session.commit()
-
-
-if __name__ == '__main__':
-    url = "sqlite:///ersa_results.db"
-    insert_test(url)
-    # clear_all(url)
