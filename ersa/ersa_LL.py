@@ -190,7 +190,9 @@ class Estimate:
     """
     Structure to hold results from estimate_relation
     """
-    def __init__(self, d, reject, null_LL, max_LL, lower_d, upper_d, alts, s):
+    def __init__(self, pair, dob, d, reject, null_LL, max_LL, lower_d, upper_d, alts, s):
+        self.indv1, self.indv2 = pair.split(':')
+        self.dob = dob
         self.d = d
         self.reject = reject
         self.alts = alts
@@ -199,16 +201,20 @@ class Estimate:
         self.max_LL = max_LL
         self.lower_d = lower_d
         self.upper_d = upper_d
+        if reject and dob[0] and dob[1]:
+            self.rel_est = potential_relationship(self.d, self.indv1, self.indv2, dob[0], dob[1])
+        else:
+            self.rel_est = None
 
 
-def estimate_relation(n, s, h0, ha, max_d, alpha):
+def estimate_relation(pair, dob, n, s, h0, ha, max_d, alpha):
     """
     Tests a pair of individuals for a relation and
-    returns relevant parameters.
+    returns a structure holding relevant parameters.
 
     Requires s to a pre-sorted list of shared segments,
-    from smallest to largest.  h0 and ha must be Background
-    Relation objects.
+    from smallest to largest.  h0 and ha must be Background and
+    Relation objects, respectively.
     """
     assert isinstance(h0, Background)
     assert isinstance(ha, Relation)
@@ -230,7 +236,7 @@ def estimate_relation(n, s, h0, ha, max_d, alpha):
     if reject:
         lower_d, upper_d = likelihood_ratio_CI(alts, max_LL, alpha)
 
-    est = Estimate(d, reject, null_LL, max_LL, lower_d, upper_d, alts, s)
+    est = Estimate(pair, dob, d, reject, null_LL, max_LL, lower_d, upper_d, alts, s)
     return est
 
 

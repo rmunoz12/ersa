@@ -120,9 +120,10 @@ def test_estimate_relation():
     pair_dict = get_pair_dict('tests/test_data/test_LL.match', t, h)
     h0 = Background(t, theta, lambda_)
     ha = Relation(c, r, t, theta, lambda_)
+    dob = (None, None)
     for pair, (n, s) in pair_dict.items():
 
-        est = estimate_relation(n, s, h0, ha, MAX_D, alpha)
+        est = estimate_relation(pair, dob, n, s, h0, ha, MAX_D, alpha)
         if pair == 'TestA:TestB':
             assert est.null_LL == -78.07341166722982
             assert est.max_LL == -30.584814485465674

@@ -20,21 +20,21 @@ class SharedSegment:
     def __init__(self, param_list):
         assert type(param_list) == list
         assert len(param_list) == 15
-        self.familyID1 = int(param_list[0])
+        # self.familyID1 = int(param_list[0])
         self.indivID1 = param_list[1]
-        self.familyID2 = int(param_list[2])
+        # self.familyID2 = int(param_list[2])
         self.indivID2 = param_list[3]
         self.chrom = int(param_list[4])
         self.bpStart = int(param_list[5])
         self.bpEnd = int(param_list[6])
-        self.snpStart = param_list[7]
-        self.snpEnd = param_list[8]
-        self.totalSNP = int(param_list[9])
+        # self.snpStart = param_list[7]
+        # self.snpEnd = param_list[8]
+        # self.totalSNP = int(param_list[9])
         self.length = float(param_list[10])
         self.lengthUnit = param_list[11]
-        self.mismatchSNP = int(param_list[12])
-        self.ind1homozygous = int(param_list[13])
-        self.ind2homozygous = int(param_list[14])
+        # self.mismatchSNP = int(param_list[12])
+        # self.ind1homozygous = int(param_list[13])
+        # self.ind2homozygous = int(param_list[14])
 
 
 def read_matchfile(path):
