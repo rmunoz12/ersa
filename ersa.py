@@ -12,7 +12,7 @@ from ersa.parser import get_pair_dict
 from time import time
 from sys import stdout
 from argparse import ArgumentParser
-from ersa.dbhandler import DBhandler
+from ersa.dbmanager import DbManager
 
 
 def get_args():
@@ -83,7 +83,7 @@ def main():
               file=output_file)
 
     if args.D:
-        with DBhandler(args.D) as db:
+        with DbManager(args.D) as db:
             for d_est, est, n, pair1, pair2, rel_est, s, seg_list in gen_estimates(args, h0, ha, pair_dict):
                 db.insert(est, seg_list)
     else:

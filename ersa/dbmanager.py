@@ -73,7 +73,7 @@ class Database:
 
     def insert(self, est, seg_list):
         """
-        Insert results into a database at url.
+        Insert results.
 
         If the pair already exists in the database, delete
         the previous results and add in the current results.
@@ -117,7 +117,7 @@ class Database:
         self.session.close()
 
 
-class DBhandler:
+class DbManager:
     def __init__(self, path, shared_pool=False):
         self.path = path
         self.shared_pool = shared_pool

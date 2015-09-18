@@ -8,7 +8,7 @@
 #   GPL license
 
 
-from ersa.dbhandler import *
+from ersa.dbmanager import *
 from ersa.parser import get_pair_dict
 from ersa.ersa_LL import Background, Relation, estimate_relation
 import pytest
@@ -35,7 +35,7 @@ def get_test_data():
 
 
 def test_insert():
-    with DBhandler("sqlite:///", shared_pool=False) as db:
+    with DbManager("sqlite:///", shared_pool=False) as db:
         for e, s in get_test_data():
             db.insert(e, s)
         assert db.session.query(Result).count() == 2
