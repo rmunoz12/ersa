@@ -12,7 +12,7 @@ from ersa.parser import get_pair_dict
 from time import time
 from sys import stdout
 from argparse import ArgumentParser
-from ersa import dbhandler
+from ersa.dbhandler import DBhandler
 
 
 def get_args():
@@ -77,7 +77,8 @@ def main():
         else:
             rel_est = "NA"
         if args.D:
-            dbhandler.insert(args.D, est, seg_list)
+            db = DBhandler(args.D)
+            db.insert(est, seg_list)
         else:
             if rel_est is None:
                 rel_est = ("NA", "NA")

@@ -117,7 +117,7 @@ def test_estimate_relation():
     c = 22                  # human autosomes
     alpha = 0.05
 
-    pair_dict = get_pair_dict('tests/test_data/test_LL.match', t, h)
+    pair_dict = get_pair_dict('tests/test_data/test_LL.match', t)
     h0 = Background(t, theta, lambda_)
     ha = Relation(c, r, t, theta, lambda_)
     dob = (None, None)

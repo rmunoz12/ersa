@@ -10,6 +10,7 @@
 from sqlalchemy import Column, ForeignKey, Integer, String, Float
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, sessionmaker
+from sqlalchemy.pool import StaticPool
 from sqlalchemy import create_engine
 from sqlalchemy_utils import database_exists
 from ersa.ersa_LL import Estimate
@@ -54,8 +55,11 @@ class Segment(Base):
 
 
 class DBhandler:
-    def __init__(self, path):
-        self.engine = create_engine(path)
+    def __init__(self, path, shared_pool=False):
+        if shared_pool:
+            self.engine = create_engine(path, connect_args={'check_same_thread':False}, poolclass=StaticPool)
+        else:
+            self.engine = create_engine(path)
         if not database_exists(path):
             # Create all tables in engine
             # if the database doesn't exist
@@ -64,7 +68,7 @@ class DBhandler:
         DB_Session = sessionmaker(bind=self.engine)
         self.session = DB_Session()
 
-    def insert(self, url, est, seg_list):
+    def insert(self, est, seg_list):
         """
         Insert results into a database at url.
 
