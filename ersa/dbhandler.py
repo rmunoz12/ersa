@@ -9,11 +9,12 @@
 
 from sqlalchemy import Column, ForeignKey, Integer, String, Float
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship, sessionmaker, backref
+from sqlalchemy.orm import relationship, sessionmaker
 from sqlalchemy import create_engine
 from sqlalchemy_utils import database_exists
 from ersa.ersa_LL import Estimate
 from ersa.parser import SharedSegment
+
 
 Base = declarative_base()
 
@@ -28,6 +29,8 @@ class Result(Base):
     rel_est = Column(String(250), nullable=True)
     n = Column(Integer, nullable=False)
     total_cM = Column(Float, nullable=False)
+    LLs = relationship("Likelihood", backref='result', cascade="all, delete, delete-orphan")
+    segments = relationship("Segment", backref='result', cascade="all, delete, delete-orphan")
 
 
 class Likelihood(Base):
@@ -35,7 +38,6 @@ class Likelihood(Base):
     __tablename__ = 'likelihood'
     id = Column(Integer, primary_key=True)
     result_id = Column(Integer, ForeignKey('result.id'))
-    result = relationship(Result, backref=backref('LLs', cascade='all', uselist=True))
     d = Column(Integer, nullable=False)
     LL = Column(Float, nullable=False)
 
@@ -45,7 +47,6 @@ class Segment(Base):
     __tablename__ = 'segment'
     id = Column(Integer, primary_key=True)
     result_id = Column(Integer, ForeignKey('result.id'))
-    result = relationship(Result, backref=backref('segments', cascade='all', uselist=True))
     chromosome = Column(Integer, nullable=False)
     bp_start = Column(Integer, nullable=False)
     bp_end = Column(Integer, nullable=False)
@@ -92,15 +93,18 @@ def insert(url, est, seg_list):
 
 def clear_one(url, indv1, indv2):
     s = _connect(url)
-    print("Query # pre delete:")
-    print(s.query(Result).count())
+    print("Pre-delete:")
+    print("R#: {} \tL#: {} \tS#: {}"
+          .format(s.query(Result).count(), s.query(Likelihood).count(), s.query(Segment).count()))
 
+    for x, y in [(indv1, indv2), (indv2, indv1)]:
+        old_res = s.query(Result).filter(Result.indv1 == x).filter(Result.indv2 == y)
+        for res in old_res:
+            s.delete(res)
 
-    s.query(Result).filter(Result.indv1 == indv1).filter(Result.indv2 == indv2).delete()
-    s.query(Result).filter(Result.indv1 == indv2).filter(Result.indv2 == indv1).delete()
-
-    print("")
-    print(s.query(Result).count())
+    print("Post-delete:")
+    print("R#: {} \tL#: {} \tS#: {}"
+          .format(s.query(Result).count(), s.query(Likelihood).count(), s.query(Segment).count()))
 
     s.commit()
 
@@ -114,5 +118,5 @@ def clear_all(url):
 
 if __name__ == '__main__':
     url = 'sqlite:///ersa_results.db'
-    clear_one(url, 'TestA', 'TestB')
+    clear_one(url, 'TestC', 'TestB')
     # clear_all(url)
