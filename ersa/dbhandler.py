@@ -35,7 +35,7 @@ class Likelihood(Base):
     __tablename__ = 'likelihood'
     id = Column(Integer, primary_key=True)
     result_id = Column(Integer, ForeignKey('result.id'))
-    result = relationship(Result, backref=backref('LLs', uselist=True))
+    result = relationship(Result, backref=backref('LLs', cascade='all', uselist=True))
     d = Column(Integer, nullable=False)
     LL = Column(Float, nullable=False)
 
@@ -45,7 +45,7 @@ class Segment(Base):
     __tablename__ = 'segment'
     id = Column(Integer, primary_key=True)
     result_id = Column(Integer, ForeignKey('result.id'))
-    result = relationship(Result, backref=backref('segments', uselist=True))
+    result = relationship(Result, backref=backref('segments', cascade='all', uselist=True))
     chromosome = Column(Integer, nullable=False)
     bp_start = Column(Integer, nullable=False)
     bp_end = Column(Integer, nullable=False)
@@ -90,6 +90,20 @@ def insert(url, est, seg_list):
 
     session.commit()
 
+def clear_one(url, indv1, indv2):
+    s = _connect(url)
+    print("Query # pre delete:")
+    print(s.query(Result).count())
+
+
+    s.query(Result).filter(Result.indv1 == indv1).filter(Result.indv2 == indv2).delete()
+    s.query(Result).filter(Result.indv1 == indv2).filter(Result.indv2 == indv1).delete()
+
+    print("")
+    print(s.query(Result).count())
+
+    s.commit()
+
 
 def clear_all(url):
     session = _connect(url)
@@ -97,3 +111,8 @@ def clear_all(url):
     session.query(Likelihood).delete()
     session.query(Segment).delete()
     session.commit()
+
+if __name__ == '__main__':
+    url = 'sqlite:///ersa_results.db'
+    clear_one(url, 'TestA', 'TestB')
+    # clear_all(url)
