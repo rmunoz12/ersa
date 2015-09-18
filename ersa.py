@@ -83,16 +83,9 @@ def main():
               file=output_file)
 
     if args.D:
-        db = DBhandler(args.D)
-        try:
+        with DBhandler(args.D) as db:
             for d_est, est, n, pair1, pair2, rel_est, s, seg_list in gen_estimates(args, h0, ha, pair_dict):
                 db.insert(est, seg_list)
-            db.commit()
-        except:
-            db.rollback()
-            raise
-        finally:
-            db.close()
     else:
         for d_est, est, n, pair1, pair2, rel_est, s, seg_list in gen_estimates(args, h0, ha, pair_dict):
             if rel_est is None:

@@ -54,7 +54,7 @@ class Segment(Base):
     bp_end = Column(Integer, nullable=False)
 
 
-class DBhandler:
+class Database:
     def __init__(self, path, shared_pool=False):
         if shared_pool:
             self.engine = create_engine(path, connect_args={'check_same_thread':False}, poolclass=StaticPool)
@@ -65,8 +65,11 @@ class DBhandler:
             # if the database doesn't exist
             Base.metadata.create_all(self.engine)
         Base.metadata.bind = self.engine
-        DB_Session = sessionmaker(bind=self.engine)
-        self.session = DB_Session()
+        self.make_session = sessionmaker(bind=self.engine)
+        self.session = None
+
+    def init_session(self):
+        self.session = self.make_session()
 
     def insert(self, est, seg_list):
         """
@@ -112,3 +115,21 @@ class DBhandler:
     def close(self):
         """ Closes the session and resets it """
         self.session.close()
+
+
+class DBhandler:
+    def __init__(self, path, shared_pool=False):
+        self.path = path
+        self.shared_pool = shared_pool
+
+    def __enter__(self):
+        self.db = Database(self.path, self.shared_pool)
+        self.db.init_session()
+        return self.db
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if exc_type is not None:
+            self.db.rollback()
+        else:
+            self.db.commit()
+        self.db.close()

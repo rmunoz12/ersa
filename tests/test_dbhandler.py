@@ -35,18 +35,18 @@ def get_test_data():
 
 
 def test_insert():
-    db = DBhandler("sqlite:///", shared_pool=False)
-    for e, s in get_test_data():
-        db.insert(e, s)
-    assert db.session.query(Result).count() == 2
-    assert db.session.query(Likelihood).count() == 20
-    assert db.session.query(Segment).count() == 10
+    with DBhandler("sqlite:///", shared_pool=False) as db:
+        for e, s in get_test_data():
+            db.insert(e, s)
+        assert db.session.query(Result).count() == 2
+        assert db.session.query(Likelihood).count() == 20
+        assert db.session.query(Segment).count() == 10
 
-    # ensure that duplicate pair combinations are
-    # replaced with new data
-    for e, s in get_test_data():
-        db.insert(e, s)
-    assert db.session.query(Result).count() == 2
-    assert db.session.query(Likelihood).count() == 20
-    assert db.session.query(Segment).count() == 10
+        # ensure that duplicate pair combinations are
+        # replaced with new data
+        for e, s in get_test_data():
+            db.insert(e, s)
+        assert db.session.query(Result).count() == 2
+        assert db.session.query(Likelihood).count() == 20
+        assert db.session.query(Segment).count() == 10
 
