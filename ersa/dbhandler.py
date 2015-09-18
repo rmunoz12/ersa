@@ -26,7 +26,8 @@ class Result(Base):
     indv1 = Column(String(250), nullable=False)
     indv2 = Column(String(250), nullable=False)
     d_est = Column(Integer, nullable=True)
-    rel_est = Column(String(250), nullable=True)
+    rel_est1 = Column(String(250), nullable=True)
+    rel_est2 = Column(String(250), nullable=True)
     n = Column(Integer, nullable=False)
     total_cM = Column(Float, nullable=False)
     LLs = relationship("Likelihood", backref='result', cascade="all, delete, delete-orphan")
@@ -52,71 +53,73 @@ class Segment(Base):
     bp_end = Column(Integer, nullable=False)
 
 
-def _init_db(url):
-    """ Create all tables in the engine. """
-    engine = create_engine(url)
-    Base.metadata.create_all(engine)
+class DBhandler:
+    def __init__(self, path):
+        self.engine = create_engine(path)
+        if not database_exists(path):
+            # Create all tables in engine
+            # if the database doesn't exist
+            Base.metadata.create_all(self.engine)
+        Base.metadata.bind = self.engine
+        DB_Session = sessionmaker(bind=self.engine)
+        self.session = DB_Session()
+
+    def insert(self, url, est, seg_list):
+        """
+        Insert results into a database at url.
+
+        If the pair already exists in the database, delete
+        the previous results and add in the current results.
+        """
+        assert isinstance(est, Estimate)
+        assert isinstance(seg_list[0], SharedSegment)
+
+        q = self.session.query(Result).\
+            filter(((Result.indv1 == est.indv1) & (Result.indv2 == est.indv2)) |
+                   ((Result.indv1 == est.indv2) & (Result.indv2 == est.indv1)))
+        if q.count():
+            self._clear_one(est.indv1, est.indv2)
+
+        d_est = est.d if est.reject else None
+        rel_est1 = est.rel_est[0] if est.rel_est else None
+        rel_est2 = est.rel_est[1] if est.rel_est else None
+        res = Result(indv1=est.indv1, indv2=est.indv2, d_est=d_est,
+                     rel_est1=rel_est1, rel_est2=rel_est2,
+                     n=len(est.s), total_cM=sum(est.s))
+        for alt in est.alts:
+            res.LLs.append(Likelihood(d=alt[0], LL=alt[2]))
+        for seg in seg_list:
+            res.segments.append(Segment(chromosome=seg.chrom, bp_start=seg.bpStart, bp_end=seg.bpEnd))
+        self.session.add(res)
+        self.session.commit()
+
+    def _clear_one(self, indv1, indv2):
+        s = self.session
+        print("Pre-delete:")
+        print("R#: {} \tL#: {} \tS#: {}"
+              .format(s.query(Result).count(), s.query(Likelihood).count(), s.query(Segment).count()))
+
+        for x, y in [(indv1, indv2), (indv2, indv1)]:
+            old_res = s.query(Result).filter(Result.indv1 == x).filter(Result.indv2 == y)
+            for res in old_res:
+                s.delete(res)
+
+        print("Post-delete:")
+        print("R#: {} \tL#: {} \tS#: {}"
+              .format(s.query(Result).count(), s.query(Likelihood).count(), s.query(Segment).count()))
+
+        s.commit()
 
 
-def _connect(url):
-    """ Connect to a database and create tables if it doesn't exist """
-    if not database_exists(url):
-        _init_db(url)
-    engine = create_engine(url)
-    Base.metadata.bind = engine
-    DBSession = sessionmaker(bind=engine)
-    session = DBSession()
-    return session
-
-
-def insert(url, est, seg_list):
-    assert isinstance(est, Estimate)
-    assert isinstance(seg_list[0], SharedSegment)
-    session = _connect(url)
-
-    d_est = est.d if est.reject else None
-    # TODO handle tuple for rel_est, e.g. (Child, Parent)
-    res = Result(indv1=est.indv1, indv2=est.indv2, d_est=d_est, rel_est=est.rel_est,
-                 n=len(est.s), total_cM=sum(est.s))
-    session.add(res)
-
-    for alt in est.alts:
-        new_LL = Likelihood(d=alt[0], LL=alt[2])
-        new_LL.result = res
-        session.add(new_LL)
-
-    for seg in seg_list:
-        new_seg = Segment(chromosome=seg.chrom, bp_start=seg.bpStart, bp_end=seg.bpEnd)
-        new_seg.result = res
-
-    session.commit()
-
-def clear_one(url, indv1, indv2):
-    s = _connect(url)
-    print("Pre-delete:")
-    print("R#: {} \tL#: {} \tS#: {}"
-          .format(s.query(Result).count(), s.query(Likelihood).count(), s.query(Segment).count()))
-
-    for x, y in [(indv1, indv2), (indv2, indv1)]:
-        old_res = s.query(Result).filter(Result.indv1 == x).filter(Result.indv2 == y)
-        for res in old_res:
-            s.delete(res)
-
-    print("Post-delete:")
-    print("R#: {} \tL#: {} \tS#: {}"
-          .format(s.query(Result).count(), s.query(Likelihood).count(), s.query(Segment).count()))
-
-    s.commit()
-
-
-def clear_all(url):
-    session = _connect(url)
-    session.query(Result).delete()
-    session.query(Likelihood).delete()
-    session.query(Segment).delete()
-    session.commit()
+    def _clear_all(self):
+        self.session.query(Result).delete()
+        self.session.query(Likelihood).delete()
+        self.session.query(Segment).delete()
+        self.session.commit()
 
 if __name__ == '__main__':
-    url = 'sqlite:///ersa_results.db'
-    clear_one(url, 'TestC', 'TestB')
-    # clear_all(url)
+    path = 'sqlite:///ersa_results.db'
+    db = DBhandler(path)
+    db._clear_one('TestC', 'TestB')
+    db._clear_one('TestB', 'TestA')
+    # clear_all()

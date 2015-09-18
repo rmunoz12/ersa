@@ -61,8 +61,8 @@ def main():
 
     if not args.D:
         output_file = open(args.ofile, "w") if args.ofile else stdout
-        print("{:<20} {:<20} {:<10} {:>10} {:>10} {:>10}"
-              .format("Indv_1", "Indv_2", "Rel_est", "d_est", "N_seg", "Tot_cM"),
+        print("{:<20} {:<20} {:<10} {:<10} {:>10} {:>10} {:>10}"
+              .format("Indv_1", "Indv_2", "Rel_est1", "Rel_est2", "d_est", "N_seg", "Tot_cM"),
               file=output_file)
 
     for pair, seg_list in pair_dict.items():
@@ -73,14 +73,16 @@ def main():
         pair1, pair2 = pair.split(':')
         d_est = est.d if est.reject else "NA"
         if est.reject and dob[0] and dob[1]:
-            rel_est = potential_relationship(pair1, pair2, dob[0], dob[1])
+            rel_est = potential_relationship(d_est, pair1, pair2, dob[0], dob[1])
         else:
             rel_est = "NA"
         if args.D:
             dbhandler.insert(args.D, est, seg_list)
         else:
-            print("{:<20} {:<20} {:10} {:>10} {:10} {:10,.2f}"
-                  .format(pair1, pair2, rel_est, d_est, n, sum(s)),
+            if rel_est is None:
+                rel_est = ("NA", "NA")
+            print("{:<20} {:<20} {:10} {:10} {:>10} {:10} {:10,.2f}"
+                  .format(pair1, pair2, rel_est[0], rel_est[1], d_est, n, sum(s)),
                   file=output_file)
 
     print("--- {} seconds ---".format(round(time() - start_time, 3)))

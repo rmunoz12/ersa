@@ -345,6 +345,8 @@ def potential_relationship(d_est, indv1, indv2, dob1, dob2):
     A tuple with the first value from the perspective
     of indv1 and the second value from the perspective of
     indv2.
+
+    If a relationship cannot be estimated, None is returned.
     """
     yr_per_gen = 30
     delta = dob2 - dob1
