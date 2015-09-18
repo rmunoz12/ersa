@@ -42,6 +42,22 @@ def get_args():
     args = p.parse_args()
     return args
 
+
+def gen_estimates(args, h0, ha, pair_dict):
+    for pair, seg_list in pair_dict.items():
+        dob = (None, None)  # TODO get dob from file
+        s = [seg.length for seg in seg_list]
+        n = len(s)
+        est = estimate_relation(pair, dob, n, s, h0, ha, args.dmax, args.alpha)
+        pair1, pair2 = pair.split(':')
+        d_est = est.d if est.reject else "NA"
+        if est.reject and dob[0] and dob[1]:
+            rel_est = potential_relationship(d_est, pair1, pair2, dob[0], dob[1])
+        else:
+            rel_est = None
+        yield d_est, est, n, pair1, pair2, rel_est, s, seg_list
+
+
 def main():
     args = get_args()
 
@@ -59,27 +75,26 @@ def main():
 
     print("--- Solving ---")
 
+    output_file = None
     if not args.D:
         output_file = open(args.ofile, "w") if args.ofile else stdout
         print("{:<20} {:<20} {:<10} {:<10} {:>10} {:>10} {:>10}"
               .format("Indv_1", "Indv_2", "Rel_est1", "Rel_est2", "d_est", "N_seg", "Tot_cM"),
               file=output_file)
 
-    for pair, seg_list in pair_dict.items():
-        dob = (None, None)  # TODO get dob from file
-        s = [seg.length for seg in seg_list]
-        n = len(s)
-        est = estimate_relation(pair, dob, n, s, h0, ha, args.dmax, args.alpha)
-        pair1, pair2 = pair.split(':')
-        d_est = est.d if est.reject else "NA"
-        if est.reject and dob[0] and dob[1]:
-            rel_est = potential_relationship(d_est, pair1, pair2, dob[0], dob[1])
-        else:
-            rel_est = "NA"
-        if args.D:
-            db = DBhandler(args.D)
-            db.insert(est, seg_list)
-        else:
+    if args.D:
+        db = DBhandler(args.D)
+        try:
+            for d_est, est, n, pair1, pair2, rel_est, s, seg_list in gen_estimates(args, h0, ha, pair_dict):
+                db.insert(est, seg_list)
+            db.commit()
+        except:
+            db.rollback()
+            raise
+        finally:
+            db.close()
+    else:
+        for d_est, est, n, pair1, pair2, rel_est, s, seg_list in gen_estimates(args, h0, ha, pair_dict):
             if rel_est is None:
                 rel_est = ("NA", "NA")
             print("{:<20} {:<20} {:10} {:10} {:>10} {:10} {:10,.2f}"

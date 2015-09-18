@@ -78,11 +78,7 @@ class DBhandler:
         assert isinstance(est, Estimate)
         assert isinstance(seg_list[0], SharedSegment)
 
-        q = self.session.query(Result).\
-            filter(((Result.indv1 == est.indv1) & (Result.indv2 == est.indv2)) |
-                   ((Result.indv1 == est.indv2) & (Result.indv2 == est.indv1)))
-        if q.count():
-            self._clear_one(est.indv1, est.indv2)
+        self.delete(est.indv1, est.indv2)
 
         d_est = est.d if est.reject else None
         rel_est1 = est.rel_est[0] if est.rel_est else None
@@ -95,35 +91,24 @@ class DBhandler:
         for seg in seg_list:
             res.segments.append(Segment(chromosome=seg.chrom, bp_start=seg.bpStart, bp_end=seg.bpEnd))
         self.session.add(res)
+
+    def delete(self, indv1, indv2):
+        """ delete a pair from the database. """
+        q = self.session.query(Result). \
+            filter(((Result.indv1 == indv1) & (Result.indv2 == indv2)) |
+                   ((Result.indv1 == indv2) & (Result.indv2 == indv1)))
+        if q.count():
+            for res in q:
+                self.session.delete(res)
+
+    def commit(self):
+        """ push changes in the current session to the database """
         self.session.commit()
 
-    def _clear_one(self, indv1, indv2):
-        s = self.session
-        print("Pre-delete:")
-        print("R#: {} \tL#: {} \tS#: {}"
-              .format(s.query(Result).count(), s.query(Likelihood).count(), s.query(Segment).count()))
+    def rollback(self):
+        """ discards changes in the current session """
+        self.session.rollback()
 
-        for x, y in [(indv1, indv2), (indv2, indv1)]:
-            old_res = s.query(Result).filter(Result.indv1 == x).filter(Result.indv2 == y)
-            for res in old_res:
-                s.delete(res)
-
-        print("Post-delete:")
-        print("R#: {} \tL#: {} \tS#: {}"
-              .format(s.query(Result).count(), s.query(Likelihood).count(), s.query(Segment).count()))
-
-        s.commit()
-
-
-    def _clear_all(self):
-        self.session.query(Result).delete()
-        self.session.query(Likelihood).delete()
-        self.session.query(Segment).delete()
-        self.session.commit()
-
-if __name__ == '__main__':
-    path = 'sqlite:///ersa_results.db'
-    db = DBhandler(path)
-    db._clear_one('TestC', 'TestB')
-    db._clear_one('TestB', 'TestA')
-    # clear_all()
+    def close(self):
+        """ Closes the session and resets it """
+        self.session.close()
