@@ -11,8 +11,6 @@
 from ersa.dbmanager import *
 from ersa.parser import get_pair_dict
 from ersa.ersa_LL import Background, Relation, estimate_relation
-from sqlalchemy import func
-import pytest
 
 
 def get_test_data():
@@ -75,3 +73,37 @@ def test_insert():
         for row in res:
             count += 1
         assert count == 2
+
+
+def test_soft_delete():
+    with DbManager("sqlite:///", shared_pool=False) as db:
+        pairs = ['TestA:TestB', 'TestC:TestB']
+        ests, segs = [], []
+        for e, s in get_test_data():
+            ests.append(e)
+            segs.append(s)
+
+        db.insert(ests, segs)
+        assert db.soft_delete(pairs) == 2
+
+        db.insert(ests, segs)
+        assert db.soft_delete(pairs) == 2
+
+def test_delete():
+    with DbManager("sqlite:///", shared_pool=False) as db:
+        ests, segs = [], []
+        for e, s in get_test_data():
+            ests.append(e)
+            segs.append(s)
+
+        db.insert(ests, segs)
+        n_deleted = db.delete()
+        assert n_deleted['r'] == 0
+        assert n_deleted['l'] == 0
+        assert n_deleted['s'] == 0
+
+        db.insert(ests, segs)
+        n_deleted = db.delete()
+        assert n_deleted['r'] == 2
+        assert n_deleted['l'] == 20
+        assert n_deleted['s'] == 10
