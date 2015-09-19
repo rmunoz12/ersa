@@ -11,6 +11,7 @@
 from ersa.dbmanager import *
 from ersa.parser import get_pair_dict
 from ersa.ersa_LL import Background, Relation, estimate_relation
+from sqlalchemy import func
 import pytest
 
 
@@ -36,17 +37,41 @@ def get_test_data():
 
 def test_insert():
     with DbManager("sqlite:///", shared_pool=False) as db:
+        ests, segs = [], []
         for e, s in get_test_data():
-            db.insert(e, s)
-        assert db.session.query(Result).count() == 2
-        assert db.session.query(Likelihood).count() == 20
-        assert db.session.query(Segment).count() == 10
+            ests.append(e)
+            segs.append(s)
 
-        # ensure that duplicate pair combinations are
-        # replaced with new data
-        for e, s in get_test_data():
-            db.insert(e, s)
-        assert db.session.query(Result).count() == 2
-        assert db.session.query(Likelihood).count() == 20
-        assert db.session.query(Segment).count() == 10
+        db.insert(ests, segs)
 
+        q = select([Result.__table__])
+        res = db.conn.execute(q)
+        count = 0
+        for row in res:
+            count += 1
+        assert count == 2
+
+        q = select([Likelihood.__table__])
+        res = db.conn.execute(q)
+        count = 0
+        for row in res:
+            count += 1
+        assert count == 20
+
+        q = select([Segment.__table__])
+        res = db.conn.execute(q)
+        count = 0
+        for row in res:
+            count += 1
+        assert count == 10
+
+        # check that old results are soft deleted
+        db.insert(ests, segs)
+
+        q = select([Result.__table__]). \
+            where(~Result.__table__.c.deleted)
+        res = db.conn.execute(q)
+        count = 0
+        for row in res:
+            count += 1
+        assert count == 2
