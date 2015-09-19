@@ -58,8 +58,8 @@ class Background:
 
     def _Fp(self, i):
         assert i >= self.t
-        prob = exp(-(i - self.t) / (self.theta - self.t)) / (self.theta - self.t)
-        return log(prob)
+        l_prob = -(i - self.t) / (self.theta - self.t) - log(self.theta - self.t)
+        return l_prob
 
     def _Sp(self, s):
         result = 0
@@ -207,7 +207,7 @@ class Estimate:
             self.rel_est = None
 
 
-def estimate_relation(pair, dob, n, s, h0, ha, max_d, alpha):
+def estimate_relation(pair, dob, n, s, h0, ha, max_d, alpha, ci=False):
     """
     Tests a pair of individuals for a relation and
     returns a structure holding relevant parameters.
@@ -232,8 +232,8 @@ def estimate_relation(pair, dob, n, s, h0, ha, max_d, alpha):
     max_LL = max_alt[2]
 
     reject = LL_ratio_test(max_LL, null_LL, alpha)
-    lower_d, upper_d = 0, 0
-    if reject:
+    lower_d, upper_d = None, None
+    if ci and reject:
         lower_d, upper_d = likelihood_ratio_CI(alts, max_LL, alpha)
 
     est = Estimate(pair, dob, d, reject, null_LL, max_LL, lower_d, upper_d, alts, s)

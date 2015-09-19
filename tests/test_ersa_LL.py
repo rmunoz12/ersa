@@ -124,7 +124,7 @@ def test_estimate_relation():
     for pair, seg_list in pair_dict.items():
         s = [seg.length for seg in seg_list]
         n = len(s)
-        est = estimate_relation(pair, dob, n, s, h0, ha, MAX_D, alpha)
+        est = estimate_relation(pair, dob, n, s, h0, ha, MAX_D, alpha, True)
         if pair == 'TestA:TestB':
             assert est.null_LL == -78.07341166722982
             assert est.max_LL == -30.584814485465674
