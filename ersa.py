@@ -7,7 +7,7 @@
 #   GPL license
 
 
-from ersa.ersa_LL import Background, Relation, estimate_relation, potential_relationship
+from ersa.ersa_LL import Background, Relation, estimate_relation
 from ersa.parser import get_pair_dict
 from time import time
 from sys import stdout
@@ -22,6 +22,8 @@ def get_args():
                    type=float, default=0.05)
     p.add_argument("-c", help="number of autosomes (default: %(default)d for humans)",
                    type=int, default=22)
+    p.add_argument("-ci", help="generate confidence intervals",
+                   action='store_true')
     p.add_argument("-d", "--dmax", help="max combined number of generations to test (default: %(default)d)",
                    type=int, default=10)
     p.add_argument("-l", help="mean number of segments shared in the population (default: %(default).1f)",
@@ -34,6 +36,7 @@ def get_args():
                    type=str)
     p.add_argument("-th", "--theta", help="mean shared segment length (in cM) in the population (default %(default).3f)",
                    type=float, default=3.197036753)
+
 
     group = p.add_mutually_exclusive_group()
     group.add_argument("-D", help="direct output to database D")
@@ -48,14 +51,10 @@ def gen_estimates(args, h0, ha, pair_dict):
         dob = (None, None)  # TODO get dob from file
         s = [seg.length for seg in seg_list]
         n = len(s)
-        est = estimate_relation(pair, dob, n, s, h0, ha, args.dmax, args.alpha)
+        est = estimate_relation(pair, dob, n, s, h0, ha, args.dmax, args.alpha, args.ci)
         pair1, pair2 = pair.split(':')
         d_est = est.d if est.reject else "NA"
-        if est.reject and dob[0] and dob[1]:
-            rel_est = potential_relationship(d_est, pair1, pair2, dob[0], dob[1])
-        else:
-            rel_est = None
-        yield d_est, est, n, pair1, pair2, rel_est, s, seg_list
+        yield d_est, est, n, pair1, pair2, s, seg_list
 
 
 def main():
@@ -84,12 +83,14 @@ def main():
 
     if args.D:
         with DbManager(args.D) as db:
-            for d_est, est, n, pair1, pair2, rel_est, s, seg_list in gen_estimates(args, h0, ha, pair_dict):
+            for d_est, est, n, pair1, pair2, s, seg_list in gen_estimates(args, h0, ha, pair_dict):
                 db.insert(est, seg_list)
     else:
-        for d_est, est, n, pair1, pair2, rel_est, s, seg_list in gen_estimates(args, h0, ha, pair_dict):
-            if rel_est is None:
+        for d_est, est, n, pair1, pair2, s, seg_list in gen_estimates(args, h0, ha, pair_dict):
+            if est.rel_est is None:
                 rel_est = ("NA", "NA")
+            else:
+                rel_est = est.rel_est
             print("{:<20} {:<20} {:10} {:10} {:>10} {:10} {:10,.2f}"
                   .format(pair1, pair2, rel_est[0], rel_est[1], d_est, n, sum(s)),
                   file=output_file)
