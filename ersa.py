@@ -12,7 +12,7 @@ from ersa.parser import get_pair_dict
 from time import time
 from sys import stdout
 from argparse import ArgumentParser
-from ersa.dbmanager import DbManager, Database
+from ersa.dbmanager import DbManager
 
 
 def get_args():
@@ -52,9 +52,7 @@ def gen_estimates(args, h0, ha, pair_dict):
         s = [seg.length for seg in seg_list]
         n = len(s)
         est = estimate_relation(pair, dob, n, s, h0, ha, args.dmax, args.alpha, args.ci)
-        pair1, pair2 = pair.split(':')
-        d_est = est.d if est.reject else "NA"
-        yield d_est, est, n, pair1, pair2, s, seg_list
+        yield est, seg_list
 
 
 def main():
@@ -74,31 +72,30 @@ def main():
 
     print("--- Solving ---")
 
-    output_file = None
-    if not args.D:
-        output_file = open(args.ofile, "w") if args.ofile else stdout
-        print("{:<20} {:<20} {:<10} {:<10} {:>10} {:>10} {:>10}"
-              .format("Indv_1", "Indv_2", "Rel_est1", "Rel_est2", "d_est", "N_seg", "Tot_cM"),
-              file=output_file)
-
     if args.D:
         n_pairs = len(pair_dict)
         print("processing {:,} pairs..".format(n_pairs))
         ests, seg_lists = [], []
-        for d_est, est, n, pair1, pair2, s, seg_list in gen_estimates(args, h0, ha, pair_dict):
+        for est, seg_list in gen_estimates(args, h0, ha, pair_dict):
             ests.append(est)
             seg_lists.append(seg_list)
         print("pushing results to database..")
         with DbManager(args.D) as db:
             db.insert(ests, seg_lists)
     else:
-        for d_est, est, n, pair1, pair2, s, seg_list in gen_estimates(args, h0, ha, pair_dict):
+        output_file = open(args.ofile, "w") if args.ofile else stdout
+        print("{:<20} {:<20} {:<10} {:<10} {:>10} {:>10} {:>10}"
+              .format("Indv_1", "Indv_2", "Rel_est1", "Rel_est2", "d_est", "N_seg", "Tot_cM"),
+              file=output_file)
+        for est, seg_list in gen_estimates(args, h0, ha, pair_dict):
+            d_est = est.d if est.reject else "NA"
+            s = sum([seg.length for seg in seg_list])
             if est.rel_est is None:
                 rel_est = ("NA", "NA")
             else:
                 rel_est = est.rel_est
             print("{:<20} {:<20} {:10} {:10} {:>10} {:10} {:10,.2f}"
-                  .format(pair1, pair2, rel_est[0], rel_est[1], d_est, n, sum(s)),
+                  .format(est.indv1, est.indv2, rel_est[0], rel_est[1], d_est, len(seg_list), s),
                   file=output_file)
 
     print("--- {} seconds ---".format(round(time() - start_time, 3)))
