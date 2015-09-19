@@ -56,6 +56,12 @@ class Segment(Base):
 
 
 class Database:
+    """
+    Represents operations that can be done on a database
+    holding results from ersa.
+
+    Best used indirectly through DbManager.
+    """
     def __init__(self, path, shared_pool=False):
         if shared_pool:
             self.engine = create_engine(path, connect_args={'check_same_thread': False},
@@ -63,8 +69,6 @@ class Database:
         else:
             self.engine = create_engine(path)
         if not database_exists(path):
-            # Create all tables in engine
-            # if the database doesn't exist
             Base.metadata.create_all(self.engine)
         Base.metadata.bind = self.engine
         self.conn = None
@@ -76,7 +80,7 @@ class Database:
         self.trans = self.conn.begin()
 
     def soft_delete(self, pairs):
-        """ soft deletes (marks with a timestamp) a list of pairs """
+        """ soft deletes (marks a boolean flag) a list of pairs """
         keys = []
         for p in pairs:
             indv1, indv2 = p.split(":")
@@ -87,9 +91,9 @@ class Database:
             res = self.conn.execute(s)
             for row in res:
                 keys.append(row[Result.__table__.c.id])
+        n = 0
         if keys:
             remainder = len(keys)
-            n = 0
             while remainder > 0:
                 i = 900 if remainder > 900 else remainder
 
@@ -102,6 +106,7 @@ class Database:
                 remainder -= i
                 del keys[-i:]
             print("marked {:,} results deleted".format(n))
+        return n
 
     def insert(self, ests, seg_lists):
         """
@@ -155,9 +160,9 @@ class Database:
             keys.append(row[Result.__table__.c.id])
         print("Found keys: {:,}".format(len(keys)))
 
+        n_deleted = {'r': 0, 'l': 0, 's': 0}
         if keys:
             remainder = len(keys)
-            n_deleted = {'r': 0, 'l': 0, 's': 0}
             while remainder > 0:
                 i = 999 if remainder > 999 else remainder
 
@@ -178,11 +183,12 @@ class Database:
 
                 remainder -= i
                 del keys[-i:]
+            print()
             print("{:10} Rows Deleted".format("Table"))
             print("Results \t{:,}".format(n_deleted['r']))
             print("Likelihood \t{:,}".format(n_deleted['l']))
             print("Segment \t{:,}".format(n_deleted['s']))
-
+        return n_deleted
 
     def commit(self):
         """ push changes in the current transaction to the database """
@@ -201,6 +207,14 @@ class Database:
 
 
 class DbManager:
+    """
+    Context manager for Database
+
+    Example
+    -------
+    with DbManager('sqlite:///:memory:') as db:
+        db.insert(ests, seg_lists)
+    """
     def __init__(self, path, shared_pool=False):
         self.path = path
         self.shared_pool = shared_pool
@@ -218,8 +232,5 @@ class DbManager:
         self.db.close()
 
 if __name__ == '__main__':
-    db = Database('sqlite:///ersa_results.db')
-    db.connect()
-    db.delete()
-    db.commit()
-    db.close()
+    with DbManager('sqlite:///ersa_results.db') as db:
+        db.delete()
