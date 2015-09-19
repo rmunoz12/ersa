@@ -7,11 +7,12 @@
 #   GPL license
 
 
-from ersa.ersa_LL import Background, Relation, estimate_relation, potential_relationship
+from ersa.ersa_LL import Background, Relation, estimate_relation
 from ersa.parser import get_pair_dict
 from time import time
 from sys import stdout
 from argparse import ArgumentParser
+from ersa.dbmanager import DbManager
 
 
 def get_args():
@@ -21,11 +22,12 @@ def get_args():
                    type=float, default=0.05)
     p.add_argument("-c", help="number of autosomes (default: %(default)d for humans)",
                    type=int, default=22)
+    p.add_argument("-ci", help="generate confidence intervals",
+                   action='store_true')
     p.add_argument("-d", "--dmax", help="max combined number of generations to test (default: %(default)d)",
-                   type = int, default=10)
+                   type=int, default=10)
     p.add_argument("-l", help="mean number of segments shared in the population (default: %(default).1f)",
                    type=float, default=13.73)
-    p.add_argument("-o", "--ofile", help="direct output to OFILE")
     p.add_argument("-r", help="expected number of recombination events per haploid genome per generation (default %(default).1f for humans)",
                    type=float, default=35.2548101)
     p.add_argument("-t", help="min segment length (in cM) to include in comparisons (default %(default).1f)",
@@ -35,8 +37,23 @@ def get_args():
     p.add_argument("-th", "--theta", help="mean shared segment length (in cM) in the population (default %(default).3f)",
                    type=float, default=3.197036753)
 
+
+    group = p.add_mutually_exclusive_group()
+    group.add_argument("-D", help="direct output to database D")
+    group.add_argument("-o", "--ofile", help="direct output to OFILE")
+
     args = p.parse_args()
     return args
+
+
+def gen_estimates(args, h0, ha, pair_dict):
+    for pair, seg_list in pair_dict.items():
+        dob = (None, None)  # TODO get dob from file
+        s = [seg.length for seg in seg_list]
+        n = len(s)
+        est = estimate_relation(pair, dob, n, s, h0, ha, args.dmax, args.alpha, args.ci)
+        yield est, seg_list
+
 
 def main():
     args = get_args()
@@ -55,27 +72,31 @@ def main():
 
     print("--- Solving ---")
 
-    if args.ofile:
-        output_file = open(args.ofile, "w")
+    if args.D:
+        n_pairs = len(pair_dict)
+        print("processing {:,} pairs..".format(n_pairs))
+        ests, seg_lists = [], []
+        for est, seg_list in gen_estimates(args, h0, ha, pair_dict):
+            ests.append(est)
+            seg_lists.append(seg_list)
+        print("pushing results to database..")
+        with DbManager(args.D) as db:
+            db.insert(ests, seg_lists)
     else:
-        output_file = stdout
-
-    print("{:<10} {:<10} {:>10} {:<10} {:>10} {:>10}"
-          .format("Indv_1", "Indv_2", "d_est", "Rel_est", "N_seg", "Tot_cM"),
-          file=output_file)
-    
-    for pair, (n, s) in pair_dict.items():
-        dob = (None, None)  # TODO get dob from file
-        est = estimate_relation(n, s, h0, ha, args.dmax, args.alpha)
-        pair1, pair2 = pair.split(':')
-        d_est = est.d if est.reject else "NA"
-        if est.reject and dob[0] and dob[1]:
-            rel_est = potential_relationship(pair1, pair2, dob[0], dob[1])
-        else:
-            rel_est = "NA"
-        print("{:<10} {:<10} {:>10} {:10} {:10} {:10,.2f}"
-              .format(pair1, pair2, d_est, rel_est, n, sum(s)),
+        output_file = open(args.ofile, "w") if args.ofile else stdout
+        print("{:<20} {:<20} {:<10} {:<10} {:>10} {:>10} {:>10}"
+              .format("Indv_1", "Indv_2", "Rel_est1", "Rel_est2", "d_est", "N_seg", "Tot_cM"),
               file=output_file)
+        for est, seg_list in gen_estimates(args, h0, ha, pair_dict):
+            d_est = est.d if est.reject else "NA"
+            s = sum([seg.length for seg in seg_list])
+            if est.rel_est is None:
+                rel_est = ("NA", "NA")
+            else:
+                rel_est = est.rel_est
+            print("{:<20} {:<20} {:10} {:10} {:>10} {:10} {:10,.2f}"
+                  .format(est.indv1, est.indv2, rel_est[0], rel_est[1], d_est, len(seg_list), s),
+                  file=output_file)
 
     print("--- {} seconds ---".format(round(time() - start_time, 3)))
 

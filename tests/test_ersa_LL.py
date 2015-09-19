@@ -117,12 +117,14 @@ def test_estimate_relation():
     c = 22                  # human autosomes
     alpha = 0.05
 
-    pair_dict = get_pair_dict('tests/test_data/test_LL.match', t, h)
+    pair_dict = get_pair_dict('tests/test_data/test_LL.match', t)
     h0 = Background(t, theta, lambda_)
     ha = Relation(c, r, t, theta, lambda_)
-    for pair, (n, s) in pair_dict.items():
-
-        est = estimate_relation(n, s, h0, ha, MAX_D, alpha)
+    dob = (None, None)
+    for pair, seg_list in pair_dict.items():
+        s = [seg.length for seg in seg_list]
+        n = len(s)
+        est = estimate_relation(pair, dob, n, s, h0, ha, MAX_D, alpha, True)
         if pair == 'TestA:TestB':
             assert est.null_LL == -78.07341166722982
             assert est.max_LL == -30.584814485465674
