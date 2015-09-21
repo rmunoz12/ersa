@@ -7,13 +7,15 @@
 #   All rights reserved
 #   GPL license
 
-from sqlalchemy import Column, ForeignKey, Integer, String, Float, Boolean
+from sqlalchemy import Column, ForeignKey, Integer, \
+    String, Float, Boolean, DateTime
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from sqlalchemy.pool import StaticPool
 from sqlalchemy.sql import select
 from sqlalchemy import create_engine
 from sqlalchemy_utils import database_exists
+from datetime import datetime
 from ersa.ersa_LL import Estimate
 from ersa.parser import SharedSegment
 
@@ -33,6 +35,7 @@ class Result(Base):
     total_cM = Column(Float, nullable=False)
     LLs = relationship("Likelihood", backref='result', cascade="all, delete, delete-orphan")
     segments = relationship("Segment", backref='result', cascade="all, delete, delete-orphan")
+    created_date = Column(DateTime, default=datetime.utcnow)
     deleted = Column(Boolean, nullable=False, default=False)
 
 
@@ -110,17 +113,10 @@ class Database:
 
     def insert(self, ests, seg_lists):
         """
-        Bulk insert of records.
-
-        Soft deletes any pre-existing pair.
+        Bulk insert of records, each with a time-stamp.
         """
         assert isinstance(ests[0], Estimate)
         assert isinstance(seg_lists[0][0], SharedSegment)
-
-        pairs = []
-        for est in ests:
-            pairs.append(est.indv1 + ":" + est.indv2)
-        self.soft_delete(pairs)
 
         for i in range(len(ests)):
             est, seg_list = ests[i], seg_lists[i]
