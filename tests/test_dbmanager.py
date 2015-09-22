@@ -63,17 +63,6 @@ def test_insert():
             count += 1
         assert count == 10
 
-        # check that old results are soft deleted
-        db.insert(ests, segs)
-
-        q = select([Result.__table__]). \
-            where(~Result.__table__.c.deleted)
-        res = db.conn.execute(q)
-        count = 0
-        for row in res:
-            count += 1
-        assert count == 2
-
 
 def test_soft_delete():
     with DbManager("sqlite:///", shared_pool=False) as db:
@@ -91,18 +80,14 @@ def test_soft_delete():
 
 def test_delete():
     with DbManager("sqlite:///", shared_pool=False) as db:
+        pairs = ['TestA:TestB', 'TestC:TestB']
         ests, segs = [], []
         for e, s in get_test_data():
             ests.append(e)
             segs.append(s)
 
         db.insert(ests, segs)
-        n_deleted = db.delete()
-        assert n_deleted['r'] == 0
-        assert n_deleted['l'] == 0
-        assert n_deleted['s'] == 0
-
-        db.insert(ests, segs)
+        db.soft_delete(pairs)
         n_deleted = db.delete()
         assert n_deleted['r'] == 2
         assert n_deleted['l'] == 20
