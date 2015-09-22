@@ -56,6 +56,7 @@ class Segment(Base):
     chromosome = Column(Integer, nullable=False)
     bp_start = Column(Integer, nullable=False)
     bp_end = Column(Integer, nullable=False)
+    length = Column(Float, nullable=False)
 
 
 class Database:
@@ -160,7 +161,8 @@ class Database:
             insert_seg = Segment.__table__.insert()
             self.conn.execute(insert_seg,
                               [{'result_id': result_id, 'chromosome': seg.chrom,
-                                'bp_start': seg.bpStart, 'bp_end': seg.bpEnd}
+                                'bp_start': seg.bpStart, 'bp_end': seg.bpEnd,
+                                'length': seg.length}
                                for seg in seg_list])
 
     def delete(self):
