@@ -39,7 +39,6 @@ def get_args():
     p.add_argument("-th", "--theta", help="mean shared segment length (in cM) in the population (default %(default).3f)",
                    type=float, default=3.197036753)
 
-
     group = p.add_mutually_exclusive_group()
     group.add_argument("-D", help="direct output to database D")
     group.add_argument("-o", "--ofile", help="direct output to OFILE")
