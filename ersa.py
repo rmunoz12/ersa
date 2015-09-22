@@ -47,6 +47,12 @@ def get_args():
 
 
 def gen_estimates(args, h0, ha, pair_dict):
+    """
+    Returns
+    -------
+    (est, seg_list) : (Estimate, list[ersa.parser.SharedSegment])
+        Tuple of estimate results and corresponding segment list.
+    """
     for pair, seg_list in pair_dict.items():
         dob = (None, None)  # TODO get dob from file
         s = [seg.length for seg in seg_list]

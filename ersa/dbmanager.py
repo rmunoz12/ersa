@@ -1,4 +1,4 @@
-"""Database handler"""
+""" Database interface and management classes """
 #   Copyright (c) 2015 by
 #   Richard Munoz <rmunoz@nygenome.org>
 #   Jie Yuan <jyuan@nygenome.org>
@@ -61,9 +61,17 @@ class Segment(Base):
 class Database:
     """
     Represents operations that can be done on a database
-    holding results from ersa.
+    holding results from ersa_LL.estimate_relation() calls.
 
     Best used indirectly through DbManager.
+
+    Parameters
+    ----------
+    path : str
+        Path to database
+
+    shared_pool : bool
+        Uses a SharedPool if true, otherwise a StaticPool
     """
     def __init__(self, path, shared_pool=False):
         if shared_pool:
@@ -83,7 +91,15 @@ class Database:
         self.trans = self.conn.begin()
 
     def soft_delete(self, pairs):
-        """ soft deletes (marks a boolean flag) a list of pairs """
+        """
+        Soft deletes (marks a boolean flag) a list of pairs
+
+        Parameters
+        ----------
+        pairs : list[str]
+            List of pairs, with each individual's id separated
+            by ":"
+        """
         keys = []
         for p in pairs:
             indv1, indv2 = p.split(":")
@@ -113,7 +129,13 @@ class Database:
 
     def insert(self, ests, seg_lists):
         """
-        Bulk insert of records, each with a time-stamp.
+        Bulk insert of records obtained from ersa_LL.estimate_relation()
+
+        Parameters
+        ----------
+        ests : list[Estimate]
+
+        seg_lists : list[list[SharedSegment]]
         """
         assert isinstance(ests[0], Estimate)
         assert isinstance(seg_lists[0][0], SharedSegment)
@@ -144,9 +166,8 @@ class Database:
     def delete(self):
         """
         Physically deletes any results that have previously
-        been soft deleted.
-
-        Corresponding likelihoods and segments are also removed.
+        been soft deleted. Corresponding likelihoods and segments
+        are also removed.
         """
         s = select([Result.__table__]). \
             where(Result.__table__.c.deleted)
@@ -206,10 +227,22 @@ class DbManager:
     """
     Context manager for Database
 
+    Parameters
+    ----------
+    path : str
+        path to the database
+
+    shared_pool : bool
+        Uses a SharedPool if true, otherwise a StaticPool
+
     Example
     -------
     with DbManager('sqlite:///:memory:') as db:
         db.insert(ests, seg_lists)
+
+    See Also
+    --------
+    Database
     """
     def __init__(self, path, shared_pool=False):
         self.path = path
