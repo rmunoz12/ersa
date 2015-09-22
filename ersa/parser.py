@@ -44,13 +44,18 @@ class SharedSegment:
         return self.length < other.length
 
 
-def read_matchfile(path):
+def read_matchfile(path, haploscores=False):
     """
     Reads a matchfile at path and yields SharedSegments.
 
     Parameters
     ----------
     path : str
+
+    haploscores : bool
+        True if the input matchfile contains haploscores in an
+        extra column at the end of each line. These scores
+        are discarded.
 
     Returns
     -------
@@ -59,11 +64,13 @@ def read_matchfile(path):
     with open(path) as matchfile:
         for line in matchfile:
             split_line = [val for val in line.split()]
+            if haploscores:
+                del split_line[-1:]
             segment = SharedSegment(split_line)
             yield segment
 
 
-def get_pair_dict(path, t, user=None):
+def get_pair_dict(path, t, user=None, haploscores=False):
     """
     Reads from path and collapses the input data into a dictionary
     mapping pairs to SharedSegments.
@@ -78,13 +85,17 @@ def get_pair_dict(path, t, user=None):
     user : str | None
         filter input by user identification
 
+    haploscores : bool
+        True if the input matchfile contains haploscores in an
+        extra column at the end of each line.
+
     Returns
     -------
     pair_dict: dict[str: list[SharedSegments]]
         Each list of SharedSegments is sorted for processing by
         ersa_LL.estimate_relation()
     """
-    s_list = read_matchfile(path)
+    s_list = read_matchfile(path, haploscores)
     pair_dict = {}
     for seg in s_list:
         assert isinstance(seg, SharedSegment)
