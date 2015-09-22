@@ -1,4 +1,4 @@
-"""Reading and parsing *.match file from Germline"""
+""" Reading and parsing *.match file from Germline """
 #   Copyright (c) 2015 by
 #   Richard Munoz <rmunoz@nygenome.org>
 #   Jie Yuan <jyuan@nygenome.org>
@@ -9,14 +9,16 @@
 
 class SharedSegment:
     """
-    Class SharedSegment
-    -------------------
+    Structure that stores named values for a matchfile line, see
+    "Output" from http://www1.cs.columbia.edu/~gusev/germline/
 
-    Stores named values for a matchfile line, see "Output" from
-    http://www1.cs.columbia.edu/~gusev/germline/
+    Parameters
+    ----------
+    param_list : list[str]
+        list of strings in the order of a germline matchfile.
 
-    Assumes that each value in the inputed param_list is a string.
-
+    Notes
+    -----
     SharedSegments are ordered by the length parameter.
     """
     def __init__(self, param_list):
@@ -42,29 +44,58 @@ class SharedSegment:
         return self.length < other.length
 
 
-def read_matchfile(path):
+def read_matchfile(path, haploscores=False):
     """
-    Reads a match file at path and returns a generator that yields SharedSegments.
+    Reads a matchfile at path and yields SharedSegments.
+
+    Parameters
+    ----------
+    path : str
+
+    haploscores : bool
+        True if the input matchfile contains haploscores in an
+        extra column at the end of each line. These scores
+        are discarded.
+
+    Returns
+    -------
+    segment : generator[SharedSegment]
     """
     with open(path) as matchfile:
         for line in matchfile:
             split_line = [val for val in line.split()]
+            if haploscores:
+                del split_line[-1:]
             segment = SharedSegment(split_line)
             yield segment
 
 
-def get_pair_dict(path, t, user=None):
+def get_pair_dict(path, t, user=None, haploscores=False):
     """
-    Reads from path and collapses the input data into a dictionary with entries:
+    Reads from path and collapses the input data into a dictionary
+    mapping pairs to SharedSegments.
 
-    {pair_id: [list of SharedSegments]}
+    Parameters
+    ----------
+    path : str
 
-    Filters to segments in the range >t and, if specified, by user.
+    t : float
+        Filter out results less than t (in cM)
 
-    pair_id = unique id for each pair of individuals compared
-    t = low threshold to filter by (in cM)
+    user : str | None
+        filter input by user identification
+
+    haploscores : bool
+        True if the input matchfile contains haploscores in an
+        extra column at the end of each line.
+
+    Returns
+    -------
+    pair_dict: dict[str: list[SharedSegments]]
+        Each list of SharedSegments is sorted for processing by
+        ersa_LL.estimate_relation()
     """
-    s_list = read_matchfile(path)
+    s_list = read_matchfile(path, haploscores)
     pair_dict = {}
     for seg in s_list:
         assert isinstance(seg, SharedSegment)

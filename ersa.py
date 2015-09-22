@@ -26,6 +26,8 @@ def get_args():
                    action='store_true')
     p.add_argument("-d", "--dmax", help="max combined number of generations to test (default: %(default)d)",
                    type=int, default=10)
+    p.add_argument("-H", help="input matchfile contains an extra column at the end of each line with haploscores (discarded by ersa)",
+                   action='store_true')
     p.add_argument("-l", help="mean number of segments shared in the population (default: %(default).1f)",
                    type=float, default=13.73)
     p.add_argument("-r", help="expected number of recombination events per haploid genome per generation (default %(default).1f for humans)",
@@ -37,7 +39,6 @@ def get_args():
     p.add_argument("-th", "--theta", help="mean shared segment length (in cM) in the population (default %(default).3f)",
                    type=float, default=3.197036753)
 
-
     group = p.add_mutually_exclusive_group()
     group.add_argument("-D", help="direct output to database D")
     group.add_argument("-o", "--ofile", help="direct output to OFILE")
@@ -47,6 +48,12 @@ def get_args():
 
 
 def gen_estimates(args, h0, ha, pair_dict):
+    """
+    Returns
+    -------
+    (est, seg_list) : (Estimate, list[ersa.parser.SharedSegment])
+        Tuple of estimate results and corresponding segment list.
+    """
     for pair, seg_list in pair_dict.items():
         dob = (None, None)  # TODO get dob from file
         s = [seg.length for seg in seg_list]
@@ -62,7 +69,7 @@ def main():
 
     print("--- Reading match file ---")
 
-    pair_dict = get_pair_dict(args.matchfile, args.t, args.user)
+    pair_dict = get_pair_dict(args.matchfile, args.t, args.user, args.H)
 
     h0 = Background(args.t, args.theta, args.l)
     ha = Relation(args.c, args.r, args.t, args.theta, args.l)

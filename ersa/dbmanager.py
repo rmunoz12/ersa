@@ -1,4 +1,4 @@
-"""Database handler"""
+""" Database interface and management classes """
 #   Copyright (c) 2015 by
 #   Richard Munoz <rmunoz@nygenome.org>
 #   Jie Yuan <jyuan@nygenome.org>
@@ -7,13 +7,15 @@
 #   All rights reserved
 #   GPL license
 
-from sqlalchemy import Column, ForeignKey, Integer, String, Float, Boolean
+from sqlalchemy import Column, ForeignKey, Integer, \
+    String, Float, Boolean, DateTime
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from sqlalchemy.pool import StaticPool
 from sqlalchemy.sql import select
 from sqlalchemy import create_engine
 from sqlalchemy_utils import database_exists
+from datetime import datetime
 from ersa.ersa_LL import Estimate
 from ersa.parser import SharedSegment
 
@@ -33,6 +35,7 @@ class Result(Base):
     total_cM = Column(Float, nullable=False)
     LLs = relationship("Likelihood", backref='result', cascade="all, delete, delete-orphan")
     segments = relationship("Segment", backref='result', cascade="all, delete, delete-orphan")
+    created_date = Column(DateTime, default=datetime.utcnow)
     deleted = Column(Boolean, nullable=False, default=False)
 
 
@@ -53,14 +56,23 @@ class Segment(Base):
     chromosome = Column(Integer, nullable=False)
     bp_start = Column(Integer, nullable=False)
     bp_end = Column(Integer, nullable=False)
+    length = Column(Float, nullable=False)
 
 
 class Database:
     """
     Represents operations that can be done on a database
-    holding results from ersa.
+    holding results from ersa_LL.estimate_relation() calls.
 
     Best used indirectly through DbManager.
+
+    Parameters
+    ----------
+    path : str
+        Path to database
+
+    shared_pool : bool
+        Uses a SharedPool if true, otherwise a StaticPool
     """
     def __init__(self, path, shared_pool=False):
         if shared_pool:
@@ -80,7 +92,15 @@ class Database:
         self.trans = self.conn.begin()
 
     def soft_delete(self, pairs):
-        """ soft deletes (marks a boolean flag) a list of pairs """
+        """
+        Soft deletes (marks a boolean flag) a list of pairs
+
+        Parameters
+        ----------
+        pairs : list[str]
+            List of pairs, with each individual's id separated
+            by ":"
+        """
         keys = []
         for p in pairs:
             indv1, indv2 = p.split(":")
@@ -110,17 +130,16 @@ class Database:
 
     def insert(self, ests, seg_lists):
         """
-        Bulk insert of records.
+        Bulk insert of records obtained from ersa_LL.estimate_relation()
 
-        Soft deletes any pre-existing pair.
+        Parameters
+        ----------
+        ests : list[Estimate]
+
+        seg_lists : list[list[SharedSegment]]
         """
         assert isinstance(ests[0], Estimate)
         assert isinstance(seg_lists[0][0], SharedSegment)
-
-        pairs = []
-        for est in ests:
-            pairs.append(est.indv1 + ":" + est.indv2)
-        self.soft_delete(pairs)
 
         for i in range(len(ests)):
             est, seg_list = ests[i], seg_lists[i]
@@ -142,15 +161,15 @@ class Database:
             insert_seg = Segment.__table__.insert()
             self.conn.execute(insert_seg,
                               [{'result_id': result_id, 'chromosome': seg.chrom,
-                                'bp_start': seg.bpStart, 'bp_end': seg.bpEnd}
+                                'bp_start': seg.bpStart, 'bp_end': seg.bpEnd,
+                                'length': seg.length}
                                for seg in seg_list])
 
     def delete(self):
         """
         Physically deletes any results that have previously
-        been soft deleted.
-
-        Corresponding likelihoods and segments are also removed.
+        been soft deleted. Corresponding likelihoods and segments
+        are also removed.
         """
         s = select([Result.__table__]). \
             where(Result.__table__.c.deleted)
@@ -210,10 +229,22 @@ class DbManager:
     """
     Context manager for Database
 
+    Parameters
+    ----------
+    path : str
+        path to the database
+
+    shared_pool : bool
+        Uses a SharedPool if true, otherwise a StaticPool
+
     Example
     -------
     with DbManager('sqlite:///:memory:') as db:
         db.insert(ests, seg_lists)
+
+    See Also
+    --------
+    Database
     """
     def __init__(self, path, shared_pool=False):
         self.path = path
