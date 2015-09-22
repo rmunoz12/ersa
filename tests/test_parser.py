@@ -28,6 +28,12 @@ def test_read_matchfile():
         len += 1
     assert len == 14
 
+    path = "tests/test_data/test_LL_haploscores.match"
+    s_list = read_matchfile(path, haploscores=True)
+    len = 0
+    for s in s_list:
+        len += 1
+    assert len == 14
 
 def test_get_pair_dict():
     path = "tests/test_data/test_LL.match"
