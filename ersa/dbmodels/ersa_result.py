@@ -14,8 +14,8 @@ from datetime import datetime
 from ersa.dbmodels.base import Base
 
 class Result(Base):
-    """ Table that holds non-vector result values """
-    __tablename__ = 'result'
+    """ Table that holds result values except for segment info """
+    __tablename__ = 'ersa_result'
     id = Column(Integer, primary_key=True)
     indv1 = Column(String(250), nullable=False)
     indv2 = Column(String(250), nullable=False)
@@ -25,6 +25,6 @@ class Result(Base):
     n = Column(Integer, nullable=False)
     total_cM = Column(Float, nullable=False)
     LLs = Column(String, nullable=False)
-    segments = relationship("Segment", backref='ersa_result', cascade="all, delete, delete-orphan")
+    segments = relationship("Segment", backref='result', cascade="all, delete, delete-orphan")
     created_date = Column(DateTime, default=datetime.utcnow)
     deleted = Column(Boolean, nullable=False, default=False)

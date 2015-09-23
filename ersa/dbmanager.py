@@ -12,8 +12,8 @@ from sqlalchemy.sql import select
 from sqlalchemy import create_engine
 from sqlalchemy_utils import database_exists
 from ersa.dbmodels.base import Base
-from ersa.dbmodels.ErsaResult import Result
-from ersa.dbmodels.ErsaSegment import Segment
+from ersa.dbmodels.ersa_result import Result
+from ersa.dbmodels.ersa_segment import Segment
 from ersa.ersa_LL import Estimate
 from ersa.parser import SharedSegment
 
@@ -152,7 +152,6 @@ class Database:
                     where(Result.__table__.c.id.in_(keys[-i:]))
                 res = self.conn.execute(d)
                 n_deleted['r'] += res.rowcount
-
 
                 d = Segment.__table__.delete(). \
                     where(Segment.__table__.c.result_id.in_(keys[-i:]))
