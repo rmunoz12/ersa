@@ -7,47 +7,15 @@
 #   All rights reserved
 #   GPL license
 
-from sqlalchemy import Column, ForeignKey, Integer, \
-    String, Float, Boolean, DateTime
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship
 from sqlalchemy.pool import StaticPool
 from sqlalchemy.sql import select
 from sqlalchemy import create_engine
 from sqlalchemy_utils import database_exists
-from datetime import datetime
+from ersa.dbmodels.base import Base
+from ersa.dbmodels.ErsaResult import Result
+from ersa.dbmodels.ErsaSegment import Segment
 from ersa.ersa_LL import Estimate
 from ersa.parser import SharedSegment
-
-Base = declarative_base()
-
-
-class Result(Base):
-    """ Table that holds non-vector result values """
-    __tablename__ = 'result'
-    id = Column(Integer, primary_key=True)
-    indv1 = Column(String(250), nullable=False)
-    indv2 = Column(String(250), nullable=False)
-    d_est = Column(Integer, nullable=True)
-    rel_est1 = Column(String(250), nullable=True)
-    rel_est2 = Column(String(250), nullable=True)
-    n = Column(Integer, nullable=False)
-    total_cM = Column(Float, nullable=False)
-    LLs = Column(String, nullable=False)
-    segments = relationship("Segment", backref='result', cascade="all, delete, delete-orphan")
-    created_date = Column(DateTime, default=datetime.utcnow)
-    deleted = Column(Boolean, nullable=False, default=False)
-
-
-class Segment(Base):
-    """ Table that holds matched segment start and end locations """
-    __tablename__ = 'segment'
-    id = Column(Integer, primary_key=True)
-    result_id = Column(Integer, ForeignKey('result.id'))
-    chromosome = Column(Integer, nullable=False)
-    bp_start = Column(Integer, nullable=False)
-    bp_end = Column(Integer, nullable=False)
-    length = Column(Float, nullable=False)
 
 
 class Database:
