@@ -33,19 +33,10 @@ class Result(Base):
     rel_est2 = Column(String(250), nullable=True)
     n = Column(Integer, nullable=False)
     total_cM = Column(Float, nullable=False)
-    LLs = relationship("Likelihood", backref='result', cascade="all, delete, delete-orphan")
+    LLs = Column(String, nullable=False)
     segments = relationship("Segment", backref='result', cascade="all, delete, delete-orphan")
     created_date = Column(DateTime, default=datetime.utcnow)
     deleted = Column(Boolean, nullable=False, default=False)
-
-
-class Likelihood(Base):
-    """ Table that holds log-likelihoods for a histogram """
-    __tablename__ = 'likelihood'
-    id = Column(Integer, primary_key=True)
-    result_id = Column(Integer, ForeignKey('result.id'))
-    d = Column(Integer, nullable=False)
-    LL = Column(Float, nullable=False)
 
 
 class Segment(Base):
@@ -147,17 +138,21 @@ class Database:
             d_est = est.d if est.reject else None
             rel_est1 = est.rel_est[0] if est.rel_est else None
             rel_est2 = est.rel_est[1] if est.rel_est else None
+            LLs = "{"
+            for i in range(len(est.alts)):
+                alt = est.alts[i]
+                LLs += "\"" + str(alt[0]) + "\"" + ":" + str(round(alt[2], 3))
+                if i == len(est.alts) - 1:
+                    LLs += "}"
+                else:
+                    LLs += ","
+
             insert_result = Result.__table__.insert()
             inserted_result = self.conn.execute(insert_result, indv1=est.indv1, indv2=est.indv2,
                                                 d_est=d_est, rel_est1=rel_est1, rel_est2=rel_est2,
-                                                n=len(est.s), total_cM=sum(est.s))
+                                                n=len(est.s), total_cM=sum(est.s), LLs=LLs)
             result_id = inserted_result.inserted_primary_key[0]
 
-            insert_LL = Likelihood.__table__.insert()
-            self.conn.execute(insert_LL,
-                              [{'result_id': result_id,
-                                'd': alt[0], 'LL': alt[2]}
-                               for alt in est.alts])
             insert_seg = Segment.__table__.insert()
             self.conn.execute(insert_seg,
                               [{'result_id': result_id, 'chromosome': seg.chrom,
@@ -179,7 +174,7 @@ class Database:
             keys.append(row[Result.__table__.c.id])
         print("Found keys: {:,}".format(len(keys)))
 
-        n_deleted = {'r': 0, 'l': 0, 's': 0}
+        n_deleted = {'r': 0, 's': 0}
         if keys:
             remainder = len(keys)
             while remainder > 0:
@@ -190,10 +185,6 @@ class Database:
                 res = self.conn.execute(d)
                 n_deleted['r'] += res.rowcount
 
-                d = Likelihood.__table__.delete(). \
-                    where(Likelihood.__table__.c.result_id.in_(keys[-i:]))
-                res = self.conn.execute(d)
-                n_deleted['l'] += res.rowcount
 
                 d = Segment.__table__.delete(). \
                     where(Segment.__table__.c.result_id.in_(keys[-i:]))
@@ -205,7 +196,6 @@ class Database:
             print()
             print("{:10} Rows Deleted".format("Table"))
             print("Results \t{:,}".format(n_deleted['r']))
-            print("Likelihood \t{:,}".format(n_deleted['l']))
             print("Segment \t{:,}".format(n_deleted['s']))
         return n_deleted
 

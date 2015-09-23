@@ -49,13 +49,6 @@ def test_insert():
             count += 1
         assert count == 2
 
-        q = select([Likelihood.__table__])
-        res = db.conn.execute(q)
-        count = 0
-        for row in res:
-            count += 1
-        assert count == 20
-
         q = select([Segment.__table__])
         res = db.conn.execute(q)
         count = 0
@@ -90,5 +83,4 @@ def test_delete():
         db.soft_delete(pairs)
         n_deleted = db.delete()
         assert n_deleted['r'] == 2
-        assert n_deleted['l'] == 20
         assert n_deleted['s'] == 10
