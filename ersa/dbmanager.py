@@ -10,6 +10,7 @@
 from sqlalchemy.pool import StaticPool
 from sqlalchemy.sql import select
 from sqlalchemy import create_engine
+from sqlalchemy.engine import reflection
 from sqlalchemy_utils import database_exists
 from ersa.dbmodels.base import Base
 from ersa.dbmodels.ersa_result import Result
@@ -39,7 +40,9 @@ class Database:
                                         poolclass=StaticPool)
         else:
             self.engine = create_engine(path)
-        if not database_exists(path):
+        insp = reflection.Inspector.from_engine(self.engine)
+        table_names = insp.get_table_names()
+        if 'ersa_result' not in table_names or 'ersa_segment' not in table_names:
             Base.metadata.create_all(self.engine)
         Base.metadata.bind = self.engine
         self.conn = None

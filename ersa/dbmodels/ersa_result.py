@@ -15,7 +15,7 @@ from ersa.dbmodels.base import Base
 
 class Result(Base):
     """ Table that holds result values except for segment info """
-    __tablename__ = 'ersa_result'
+    __tablename__ = "ersa_result"
     id = Column(Integer, primary_key=True)
     indv1 = Column(String(250), nullable=False)
     indv2 = Column(String(250), nullable=False)
