@@ -12,9 +12,9 @@ from ersa.dbmodels.base import Base
 
 class Segment(Base):
     """ Table that holds matched segment start and end locations """
-    __tablename__ = 'ersa_segment'
+    __tablename__ = "ersa_segment"
     id = Column(Integer, primary_key=True)
-    result_id = Column(Integer, ForeignKey('ersa_result.id'))
+    result_id = Column(Integer, ForeignKey("ersa_result.id"))
     chromosome = Column(Integer, nullable=False)
     bp_start = Column(Integer, nullable=False)
     bp_end = Column(Integer, nullable=False)
