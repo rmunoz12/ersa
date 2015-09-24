@@ -25,11 +25,7 @@ setup(name=NAME,
       license=LICENSE,
       packages=find_packages(),
       test_suite='tests',
-      entry_points={
-          'console_scripts': [
-              'ersa = ersa:main',
-          ],
-      },
+      scripts=['ersa'],
       install_requires=['scipy', 'SQLAlchemy', 'SQLAlchemy_Utils',
                         'inflect', 'pytest'],
       classifiers=['Development Status :: 4 - Beta',
