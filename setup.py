@@ -27,7 +27,7 @@ setup(name=NAME,
       test_suite='tests',
       entry_points={
           'console_scripts': [
-              'ersa = ersa.ersa:main',
+              'ersa = ersa:main',
           ],
       },
       install_requires=['scipy', 'SQLAlchemy', 'SQLAlchemy_Utils',
