@@ -121,7 +121,8 @@ class Database:
             insert_result = Result.__table__.insert()
             inserted_result = self.conn.execute(insert_result, indv1=est.indv1, indv2=est.indv2,
                                                 d_est=d_est, rel_est1=rel_est1, rel_est2=rel_est2,
-                                                n=len(est.s), total_cM=sum(est.s), LLs=LLs)
+                                                n=len(est.s), total_cM=sum(est.s), LLs=LLs,
+                                                na=(len(est.s) - est.np))
             result_id = inserted_result.inserted_primary_key[0]
 
             insert_seg = Segment.__table__.insert()
