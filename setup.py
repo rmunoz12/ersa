@@ -10,7 +10,7 @@ MAINTAINER_EMAIL = "rmunoz@columbia.edu"
 DOWNLOAD_URL = 'http://github.com/rmunoz12/ersa'
 LICENSE = 'GNU GPL v3'
 
-VERSION = '1.0'
+VERSION = '1.0.0'
 
 setup(name=NAME,
       version=VERSION,
@@ -24,10 +24,10 @@ setup(name=NAME,
       download_url=DOWNLOAD_URL,
       license=LICENSE,
       packages=find_packages(),
-      test_suite='ersa.tests',
+      test_suite='tests',
       entry_points={
           'console_scripts': [
-              'ersa = ersa:main',
+              'ersa = ersa.ersa:main',
           ],
       },
       install_requires=['scipy', 'SQLAlchemy', 'SQLAlchemy_Utils',
