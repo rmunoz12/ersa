@@ -12,7 +12,7 @@ to estimate relationships.
 
 from math import exp, log, factorial
 from operator import itemgetter
-from .chisquare import LL_ratio_test, likelihood_ratio_CI
+from ersa.chisquare import LL_ratio_test, likelihood_ratio_CI
 import inflect
 
 class Background:

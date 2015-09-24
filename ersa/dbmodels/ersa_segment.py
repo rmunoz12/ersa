@@ -8,7 +8,7 @@
 #   GPL license
 
 from sqlalchemy import Column, ForeignKey, Integer, Float
-from .base import Base
+from ersa.dbmodels.base import Base
 
 class Segment(Base):
     """ Table that holds matched segment start and end locations """

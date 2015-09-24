@@ -11,7 +11,7 @@ from sqlalchemy import Column, Integer, \
     String, Float, Boolean, DateTime
 from sqlalchemy.orm import relationship
 from datetime import datetime
-from .base import Base
+from ersa.dbmodels.base import Base
 
 class Result(Base):
     """ Table that holds result values except for segment info """

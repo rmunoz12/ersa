@@ -22,7 +22,7 @@ def get_test_data():
     r = 35.2548101          # ~for humans
     c = 22                  # human autosomes
     alpha = 0.05
-    pair_dict = get_pair_dict('tests/test_data/test_LL.match', t)
+    pair_dict = get_pair_dict('ersa/tests/test_data/test_LL.match', t)
     h0 = Background(t, theta, lambda_)
     ha = Relation(c, r, t, theta, lambda_)
     dob = (None, None)
