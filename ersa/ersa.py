@@ -7,12 +7,12 @@
 #   GPL license
 
 
-from ersa.ersa_LL import Background, Relation, estimate_relation
-from ersa.parser import get_pair_dict
+from .ersa_LL import Background, Relation, estimate_relation
+from .parser import get_pair_dict
 from time import time
 from sys import stdout
 from argparse import ArgumentParser
-from ersa.dbmanager import DbManager
+from .dbmanager import DbManager
 
 
 def get_args():
@@ -106,6 +106,3 @@ def main():
                   file=output_file)
 
     print("--- {} seconds ---".format(round(time() - start_time, 3)))
-
-if __name__ == '__main__':
-    main()
