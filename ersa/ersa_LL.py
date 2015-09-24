@@ -254,7 +254,7 @@ class Estimate:
     """
     Structure to hold results from estimate_relation
     """
-    def __init__(self, pair, dob, d, reject, null_LL, max_LL, lower_d, upper_d, alts, s):
+    def __init__(self, pair, dob, d, reject, null_LL, max_LL, lower_d, upper_d, alts, s, np):
         self.indv1, self.indv2 = pair.split(':')
         self.dob = dob
         self.d = d
@@ -265,6 +265,7 @@ class Estimate:
         self.max_LL = max_LL
         self.lower_d = lower_d
         self.upper_d = upper_d
+        self.np = np
         if reject and dob[0] and dob[1]:
             self.rel_est = potential_relationship(self.d, self.indv1, self.indv2, dob[0], dob[1])
         else:
@@ -322,6 +323,7 @@ def estimate_relation(pair, dob, n, s, h0, ha, max_d, alpha, ci=False):
         alts.append((d - 1, alt_np, alt_MLL))  # subtract one from d since a = 2
     max_alt = max(alts, key=itemgetter(2))
     d = max_alt[0]
+    np = max_alt[1]
     max_LL = max_alt[2]
 
     reject = LL_ratio_test(max_LL, null_LL, alpha)
@@ -329,7 +331,7 @@ def estimate_relation(pair, dob, n, s, h0, ha, max_d, alpha, ci=False):
     if ci and reject:
         lower_d, upper_d = likelihood_ratio_CI(alts, max_LL, alpha)
 
-    est = Estimate(pair, dob, d, reject, null_LL, max_LL, lower_d, upper_d, alts, s)
+    est = Estimate(pair, dob, d, reject, null_LL, max_LL, lower_d, upper_d, alts, s, np)
     return est
 
 

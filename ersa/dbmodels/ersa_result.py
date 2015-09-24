@@ -23,6 +23,7 @@ class Result(Base):
     rel_est1 = Column(String(250), nullable=True)
     rel_est2 = Column(String(250), nullable=True)
     n = Column(Integer, nullable=False)
+    na = Column(Integer, nullable=False)
     total_cM = Column(Float, nullable=False)
     LLs = Column(String, nullable=False)
     segments = relationship("Segment", backref='result', cascade="all, delete, delete-orphan")
