@@ -11,7 +11,6 @@ from sqlalchemy.pool import StaticPool
 from sqlalchemy.sql import select
 from sqlalchemy import create_engine
 from sqlalchemy.engine import reflection
-from sqlalchemy_utils import database_exists
 from ersa.dbmodels.base import Base
 from ersa.dbmodels.ersa_result import Result
 from ersa.dbmodels.ersa_segment import Segment
