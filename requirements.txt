@@ -1,5 +1,5 @@
-scipy == 0.16.0
-SQLAlchemy == 1.0.8
-SQLAlchemy_Utils == 0.31.0
+scipy == 0.15.1
+setuptools == 18.3.2
 inflect == 0.2.5
 pytest == 2.8.0
+SQLAlchemy == 1.0.8

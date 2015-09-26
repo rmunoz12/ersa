@@ -11,11 +11,11 @@ from sqlalchemy.pool import StaticPool
 from sqlalchemy.sql import select
 from sqlalchemy import create_engine
 from sqlalchemy.engine import reflection
-from ersa.dbmodels.base import Base
-from ersa.dbmodels.ersa_result import Result
-from ersa.dbmodels.ersa_segment import Segment
-from ersa.ersa_LL import Estimate
-from ersa.parser import SharedSegment
+from .dbmodels.base import Base
+from .dbmodels.ersa_result import Result
+from .dbmodels.ersa_segment import Segment
+from .ersa_LL import Estimate
+from .parser import SharedSegment
 
 
 class Database:
@@ -221,7 +221,3 @@ class DbManager:
         else:
             self.db.commit()
         self.db.close()
-
-if __name__ == '__main__':
-    with DbManager('sqlite:///ersa_results.db') as db:
-        db.delete()
