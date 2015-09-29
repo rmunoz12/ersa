@@ -8,7 +8,7 @@ AUTHOR_EMAIL = "rmunoz@columbia.edu, jyuan@columbia.edu, yaniv@cs.columbia.edu"
 MAINTAINER = "Richard Munoz"
 MAINTAINER_EMAIL = "rmunoz@columbia.edu"
 DOWNLOAD_URL = 'http://github.com/rmunoz12/ersa'
-LICENSE = 'GNU GPL v3'
+LICENSE = 'GNU General Public License v3 (GPLv3)'
 
 VERSION = '1.0.0'
 
@@ -30,9 +30,13 @@ setup(name=NAME,
       },
       install_requires=['sqlalchemy', 'inflect', 'pytest', 'scipy'],
       classifiers=['Development Status :: 4 - Beta',
+                   'Intended Audience :: Science/Research',
                    'Programming Language :: Python :: 3.4',
-                   'License :: OSI Approved :: GNU GPL v3',
+                   'Programming Language :: Python :: 3 :: Only',
+                   'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
                    'Operating System :: OS Independent',
                    'Intended Audience :: Science/Research',
-                   'Topic :: Scientific/Engineering :: Bio-Informatics']
+                   'Topic :: Scientific/Engineering :: Bio-Informatics',
+                   'Topic :: Scientific/Engineering :: Information Analysis',
+                   'Topic :: Sociology :: Genealogy']
       )
