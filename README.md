@@ -6,7 +6,7 @@ Copyright (c) 2015 by
 - Jie Yuan (jyuan@nygenome.org)
 - Yaniv Erlich (yaniv@nygenome.org)
 
-License: GNU GPL v3 (see COPYING.txt)
+License: GNU GPL v3 (see LICENSE.txt)
 
 ## Requirements
 `ersa` requires Python 3.4 or greater.  In addition, the following packages for python3 must be installed prior to the installation process:
