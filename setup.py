@@ -1,7 +1,11 @@
 from setuptools import setup, find_packages
 
-DESCRIPTION = "Implementation of Huff et. al. (2011) Estimation of Recent Shared Ancestry"
-LONG_DESCRIPTION = DESCRIPTION
+DESCRIPTION = "Implementation of Huff et. al. (2011) Estimation of Recent Shared Ancestry "
+LONG_DESCRIPTION = "`ersa` estimates the combined number of generations between pairs of " \
+                   "individuals using a " \
+                   "`Germline <http://www1.cs.columbia.edu/~gusev/germline/>`_ " \
+                   "matchfile as input.  It is an implementation of " \
+                   "`Huff et. al. (2011) Maximum-Likelihood estimation of recent shared ancenstry (ERSA) <http://genome.cshlp.org/content/21/5/768.full>`_ ."
 NAME = "ersa"
 AUTHOR = "Richard Munoz, Jie Yuan, Yaniv Erlich"
 AUTHOR_EMAIL = "rmunoz@columbia.edu, jyuan@columbia.edu, yaniv@cs.columbia.edu"
