@@ -1,16 +1,20 @@
 from setuptools import setup, find_packages
 
-DESCRIPTION = "Implementation of Huff et. al. (2011) Estimation of Recent Shared Ancestry"
-LONG_DESCRIPTION = DESCRIPTION
+DESCRIPTION = "Implementation of Huff et. al. (2011) Estimation of Recent Shared Ancestry "
+LONG_DESCRIPTION = "`ersa` estimates the combined number of generations between pairs of " \
+                   "individuals using a " \
+                   "`Germline <http://www1.cs.columbia.edu/~gusev/germline/>`_ " \
+                   "matchfile as input.  It is an implementation of " \
+                   "`Huff et. al. (2011) Maximum-Likelihood estimation of recent shared ancenstry (ERSA) <http://genome.cshlp.org/content/21/5/768.full>`_ ."
 NAME = "ersa"
 AUTHOR = "Richard Munoz, Jie Yuan, Yaniv Erlich"
 AUTHOR_EMAIL = "rmunoz@columbia.edu, jyuan@columbia.edu, yaniv@cs.columbia.edu"
 MAINTAINER = "Richard Munoz"
 MAINTAINER_EMAIL = "rmunoz@columbia.edu"
 DOWNLOAD_URL = 'http://github.com/rmunoz12/ersa'
-LICENSE = 'GNU GPL v3'
+LICENSE = 'GNU General Public License v3 (GPLv3)'
 
-VERSION = '1.0.0'
+VERSION = '1.0.1'
 
 setup(name=NAME,
       version=VERSION,
@@ -30,9 +34,13 @@ setup(name=NAME,
       },
       install_requires=['sqlalchemy', 'inflect', 'pytest', 'scipy'],
       classifiers=['Development Status :: 4 - Beta',
+                   'Intended Audience :: Science/Research',
                    'Programming Language :: Python :: 3.4',
-                   'License :: OSI Approved :: GNU GPL v3',
+                   'Programming Language :: Python :: 3 :: Only',
+                   'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
                    'Operating System :: OS Independent',
                    'Intended Audience :: Science/Research',
-                   'Topic :: Scientific/Engineering :: Bio-Informatics']
+                   'Topic :: Scientific/Engineering :: Bio-Informatics',
+                   'Topic :: Scientific/Engineering :: Information Analysis',
+                   'Topic :: Sociology :: Genealogy']
       )
