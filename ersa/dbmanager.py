@@ -91,7 +91,8 @@ class Database:
 
     def insert(self, ests, seg_lists):
         """
-        Bulk insert of records obtained from ersa_LL.estimate_relation()
+        Bulk insert of records obtained from ersa_LL.estimate_relation().
+        Pre-existing pair ids are soft-deleted prior to inserting new results.
 
         Parameters
         ----------
