@@ -25,6 +25,7 @@ class Result(Base):
     n = Column(Integer, nullable=False)
     na = Column(Integer, nullable=False)
     total_cM = Column(Float, nullable=False)
+    total_bp = Column(Integer, nullable=False)
     LLs = Column(String, nullable=False)
     segments = relationship("Segment", backref='result', cascade="all, delete, delete-orphan")
     created_date = Column(DateTime, default=datetime.utcnow)
