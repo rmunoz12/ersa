@@ -164,15 +164,15 @@ class Database:
             while remainder > 0:
                 i = 999 if remainder > 999 else remainder
 
-                d = Result.__table__.delete(). \
-                    where(Result.__table__.c.id.in_(keys[-i:]))
-                res = self.conn.execute(d)
-                n_deleted['r'] += res.rowcount
-
                 d = Segment.__table__.delete(). \
                     where(Segment.__table__.c.result_id.in_(keys[-i:]))
                 res = self.conn.execute(d)
                 n_deleted['s'] += res.rowcount
+
+                d = Result.__table__.delete(). \
+                    where(Result.__table__.c.id.in_(keys[-i:]))
+                res = self.conn.execute(d)
+                n_deleted['r'] += res.rowcount
 
                 remainder -= i
                 del keys[-i:]
