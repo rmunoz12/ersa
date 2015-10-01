@@ -84,3 +84,17 @@ def test_delete():
         n_deleted = db.delete()
         assert n_deleted['r'] == 2
         assert n_deleted['s'] == 10
+
+        db.insert(ests, segs)
+        db.insert(ests, segs)
+        n_deleted = db.delete()
+        assert n_deleted['r'] == 2
+        assert n_deleted['s'] == 10
+
+        # 2 results in db prior to this block
+        db.insert(ests, segs)  # 4 results
+        db.insert(ests, segs)  # 6 results
+        db.insert(ests, segs)  # 8 results
+        n_deleted = db.delete()
+        assert n_deleted['r'] == 6
+        assert n_deleted['s'] == 30

@@ -91,7 +91,8 @@ class Database:
 
     def insert(self, ests, seg_lists):
         """
-        Bulk insert of records obtained from ersa_LL.estimate_relation()
+        Bulk insert of records obtained from ersa_LL.estimate_relation().
+        Pre-existing pair ids are soft-deleted prior to inserting new results.
 
         Parameters
         ----------
@@ -101,6 +102,13 @@ class Database:
         """
         assert isinstance(ests[0], Estimate)
         assert isinstance(seg_lists[0][0], SharedSegment)
+
+        pairs = []
+        for est in ests:
+            p = est.indv1 + ":" + est.indv2
+            pairs.append(p)
+
+        self.soft_delete(pairs)
 
         for i in range(len(ests)):
             est, seg_list = ests[i], seg_lists[i]
