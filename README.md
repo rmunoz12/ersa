@@ -33,3 +33,9 @@ This creates `ersa_results.db` in current directory.
 For additional options, use
 
     $ ersa -h
+
+## Notes
+On inserting results into a database, if a comparison between a pair of individuals exists, `ersa` will mark the old result as deleted (i.e., soft delete the result).  To physically delete these old results from the database, a utlity `ersa_delete_rows` is also provided:
+
+    $ ersa_delete_rows "sqlite:///ersa_results.db"
+

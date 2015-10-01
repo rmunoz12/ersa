@@ -114,6 +114,7 @@ class Database:
             est, seg_list = ests[i], seg_lists[i]
 
             d_est = est.d if est.reject else None
+            np = est.np if est.reject else len(est.s)
             rel_est1 = est.rel_est[0] if est.rel_est else None
             rel_est2 = est.rel_est[1] if est.rel_est else None
             LLs = "{"
@@ -124,12 +125,16 @@ class Database:
                     LLs += "}"
                 else:
                     LLs += ","
+            total_bp = 0
+            for seg in seg_list:
+                total_bp += seg.bpEnd - seg.bpStart + 1
 
             insert_result = Result.__table__.insert()
             inserted_result = self.conn.execute(insert_result, indv1=est.indv1, indv2=est.indv2,
                                                 d_est=d_est, rel_est1=rel_est1, rel_est2=rel_est2,
-                                                n=len(est.s), total_cM=sum(est.s), LLs=LLs,
-                                                na=(len(est.s) - est.np))
+                                                n=len(est.s), total_cM=sum(est.s),
+                                                total_bp=total_bp, LLs=LLs,
+                                                na=(len(est.s) - np))
             result_id = inserted_result.inserted_primary_key[0]
 
             insert_seg = Segment.__table__.insert()
