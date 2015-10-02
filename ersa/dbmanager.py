@@ -147,39 +147,29 @@ class Database:
     def delete(self):
         """
         Physically deletes any results that have previously
-        been soft deleted. Corresponding likelihoods and segments
+        been soft deleted. Corresponding segments
         are also removed.
         """
         s = select([Result.__table__]). \
             where(Result.__table__.c.deleted)
         res = self.conn.execute(s)
-        keys = []
-        for row in res:
-            keys.append(row[Result.__table__.c.id])
-        print("Found keys: {:,}".format(len(keys)))
-
         n_deleted = {'r': 0, 's': 0}
-        if keys:
-            remainder = len(keys)
-            while remainder > 0:
-                i = 999 if remainder > 999 else remainder
 
-                d = Segment.__table__.delete(). \
-                    where(Segment.__table__.c.result_id.in_(keys[-i:]))
-                res = self.conn.execute(d)
-                n_deleted['s'] += res.rowcount
+        for row in res:
+            d = Segment.__table__.delete(). \
+                where(Segment.__table__.c.result_id == row[Result.__table__.c.id])
+            res2 = self.conn.execute(d)
+            n_deleted['s'] += res2.rowcount
 
-                d = Result.__table__.delete(). \
-                    where(Result.__table__.c.id.in_(keys[-i:]))
-                res = self.conn.execute(d)
-                n_deleted['r'] += res.rowcount
+        d = Result.__table__.delete(). \
+            where(Result.__table__.c.deleted)
+        res = self.conn.execute(d)
+        n_deleted['r'] += res.rowcount
 
-                remainder -= i
-                del keys[-i:]
-            print()
-            print("{:10} Rows Deleted".format("Table"))
-            print("Results \t{:,}".format(n_deleted['r']))
-            print("Segment \t{:,}".format(n_deleted['s']))
+        print()
+        print("{:10} Rows Deleted".format("Table"))
+        print("Results \t{:,}".format(n_deleted['r']))
+        print("Segment \t{:,}".format(n_deleted['s']))
         return n_deleted
 
     def commit(self):
