@@ -290,8 +290,14 @@ class Estimate:
         self.lower_d = lower_d
         self.upper_d = upper_d
         self.np = np
-        if reject and dob[0] and dob[1]:
-            self.rel_est = potential_relationship(self.d, self.indv1, self.indv2, dob[0], dob[1])
+        if reject:
+            years = [dob[0], dob[1]]
+            if dob[0] is None or dob[1] is None:
+                if d % 2 == 0:
+                    years[0], years[1] = 0, 0
+                else:
+                    years[0], years[1] = 0, 31
+            self.rel_est = potential_relationship(self.d, self.indv1, self.indv2, years[0], years[1])
         else:
             self.rel_est = None
 
@@ -429,7 +435,7 @@ def _n_to_w(n, capitalize=True):
     return s
 
 
-def _build_rel_map():
+def _build_rel_map(dmax=20):
     """
     Helper function for potential_relationship() that
     builds the static relationship/consanguinity map.
@@ -445,7 +451,7 @@ def _build_rel_map():
     rel_map = {1: {-1: "Parent", 1: "Child"},
                2: {-2: "Grandparent", 0: "Sibling", 2: "Grandchild"},
                3: {-3: "Great Grandparent", -1: "Aunt/Uncle", 1: "Niece/Nephew", 3: "Great Grandchild"}}
-    for d in range(4, 7 + 1):
+    for d in range(4, dmax + 1):
         gen_bin = {}
         if d % 2:
             k = 1
@@ -483,7 +489,7 @@ def _build_rel_map():
     return rel_map
 
 
-@_static_vars(rel_map=_build_rel_map())
+@_static_vars(rel_map=_build_rel_map(dmax=20))
 def potential_relationship(d_est, indv1, indv2, dob1, dob2):
     """
     Estimates a potential consanguinity between two individuals,
@@ -525,6 +531,11 @@ def potential_relationship(d_est, indv1, indv2, dob1, dob2):
         return None
     else:
         bin_map = potential_relationship.rel_map[d_est]
+    if gen_bin % 2 == 1 and d_est < 5:
+        ret = bin_map[gen_bin]
+        ret += " or "
+        ret += bin_map[-gen_bin]
+        return ret, ret
     return bin_map[gen_bin], bin_map[-gen_bin]
 
 
