@@ -187,7 +187,15 @@ class Relation(Background):
 
     def _Fa(self, i, d):
         assert i >= self.t
-        l_prob = (-d * (i-self.t) / 100) - log(100 / d)
+        l_prob = (-d * (i - self.t) / 100)
+        if d != 2:
+            l_prob += -log(100 / d)
+        else:
+            # Equation S2
+            # k_hat reference:
+            # https://en.wikipedia.org/wiki/Gamma_distribution#Maximum_likelihood_estimation
+            k_hat = i // (100 / d)
+            l_prob = k_hat * log(i - self.t) - log(factorial(k_hat - 1)) - k_hat * log(100 / d)
         return l_prob
 
     def _Sa(self, s, d):
