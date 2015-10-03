@@ -199,7 +199,11 @@ class Relation(Background):
             k_hat += 1  # base case is k_hat = 1, since always at least one segment
             if k_hat > 1:
                 new_param = True
-            l_prob += (k_hat - 1) * log(i - self.t) - log(factorial(k_hat - 1)) - k_hat * log(100 / d)
+            if (i - self.t) > 0:
+                l_prob += (k_hat - 1) * log(i - self.t)
+            else:
+                l_prob += -2 ** 20  # log is undefined, use small number
+            l_prob += -log(factorial(k_hat - 1)) - k_hat * log(100 / d)
         return l_prob, new_param
 
     def _Sa(self, s, d):
@@ -260,14 +264,14 @@ class Relation(Background):
         max_np, max_mll : (int, float)
            number of segments attributed to background, log-likelihood
         """
-        max_mll, max_np = None, None
+        max_mll, max_np,max_addl_params = None, None, None
         for np in range(n + 1):
             mll, addl_params = self._LLr(np, n - np, s, d)
             if max_mll is None:
-                max_mll, max_np, addl_params = mll, np, addl_params
+                max_mll, max_np, max_addl_params = mll, np, addl_params
             elif max_mll < mll:
-                max_mll, max_np, addl_params = mll, np, addl_params
-        return max_np, max_mll, addl_params
+                max_mll, max_np, max_addl_params = mll, np, addl_params
+        return max_np, max_mll, max_addl_params
 
 
 class Estimate:
@@ -343,17 +347,17 @@ def estimate_relation(pair, dob, n, s, h0, ha, max_d, alpha, ci=False):
         alts.append((d - 1, alt_np, alt_MLL, addl_params))  # subtract one from d since a = 2
     max_alt = max(alts, key=itemgetter(2))
     d, np, max_LL, addl_params = max_alt[0], max_alt[1], max_alt[2], max_alt[3]
-    if d == 2:
+    if d == 1:
         alts_less_2 = []
         for alt in alts:
-            if alt[0] != 2:
+            if alt[0] != 1:
                 alts_less_2.append(alt)
         second_max_alt = max(alts_less_2, key=itemgetter(2))
         second_max_LL = second_max_alt[2]
         reject_for_d2 = LL_ratio_test(max_LL, second_max_LL, alpha, df=addl_params)
         if not reject_for_d2:
             max_alt = second_max_alt
-
+            d, np, max_LL, addl_params = max_alt[0], max_alt[1], max_alt[2], max_alt[3]
     reject = LL_ratio_test(max_LL, null_LL, alpha)
     lower_d, upper_d = None, None
     if ci and reject:
