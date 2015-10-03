@@ -31,5 +31,4 @@ class Result(Base):
     created_date = Column(DateTime, default=datetime.utcnow, index=True)
     deleted = Column(Boolean, nullable=False, default=False, index=True)
     IBS_estimate = Column(Float, nullable=True, index=True)
-    IBS_adj_d = Column(Integer, nullable=True, index=True)
-    Use_IBS_adj_d = Column(Boolean, nullable=True, index=True)
+    IBS_d_adj = Column(Integer, nullable=False, default=0, index=True)
