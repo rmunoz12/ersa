@@ -59,13 +59,24 @@ class TestRelation():
         with pytest.raises(AssertionError):
             d = 5
             self.R._Fa(self.t - 1, d)
-        assert self.R._Fa(5, 100) == -(5 - self.R.t)
-        assert self.R._Fa(6, 1) == -(6 - self.R.t) / 100 - log(100)
+        fa, new_param = self.R._Fa(5, 100)
+        assert fa == -(5 - self.R.t)
+
+        fa, new_param = self.R._Fa(6, 1)
+        assert fa == -(6 - self.R.t) / 100 - log(100)
 
     def test_Sa(self):
         d = 4
-        assert self.R._Sa([5], d) == self.R._Fa(5, d)
-        assert self.R._Sa([5, 10], d) == self.R._Fa(5, d) + self.R._Fa(10, d)
+        sa, addl_params = self.R._Sa([5], d)
+        fa, new_param = self.R._Fa(5, d)
+        assert sa == fa
+
+        sa, addl_params = self.R._Sa([5, 10], d)
+        fa1, new_param1 = self.R._Fa(5, d)
+        fa2, new_param2 = self.R._Fa(10, d)
+        fa = fa1 + fa2
+        new_param = new_param1 + new_param2
+        assert sa == fa
 
     def test_p(self):
         assert self.R._p(100) == exp(-self.R.t)
@@ -85,15 +96,17 @@ class TestRelation():
         for np in range(n + 1):
             na = n - np
             mlr_obs = self.R._LLr(np, na, s, d)
-            mlr_exp = self.R._Np(np) + self.R._Na(na, d) + self.R._Sp(s[:np]) + self.R._Sa(s[np:], d)
+            mlr_exp = self.R._Np(np) + self.R._Na(na, d) + self.R._Sp(s[:np])
+            sa, addl_params = self.R._Sa(s[np:], d)
+            mlr_exp += sa
             assert mlr_obs == mlr_exp
 
     def test_MLL(self):
-        max_np, max_mll = self.R.MLL(1, [4], 2)
+        max_np, max_mll, addl_params = self.R.MLL(1, [4], 2)
         assert max_np == 1
         assert max_mll == -9.099384755487144
 
-        max_np, max_mll = self.R.MLL(5, [10, 5, 3], 8)
+        max_np, max_mll, addl_params = self.R.MLL(5, [10, 5, 3], 8)
         assert max_np == 5
         assert max_mll == -10.949250206207347
 

@@ -187,6 +187,7 @@ class Relation(Background):
 
     def _Fa(self, i, d):
         assert i >= self.t
+        new_param = False
         l_prob = (-d * (i - self.t) / 100)
         if d != 2:
             l_prob += -log(100 / d)
@@ -195,14 +196,20 @@ class Relation(Background):
             # k_hat reference:
             # https://en.wikipedia.org/wiki/Gamma_distribution#Maximum_likelihood_estimation
             k_hat = i // (100 / d)
-            l_prob = k_hat * log(i - self.t) - log(factorial(k_hat - 1)) - k_hat * log(100 / d)
-        return l_prob
+            k_hat += 1  # base case is k_hat = 1, since always at least one segment
+            if k_hat > 1:
+                new_param = True
+            l_prob += (k_hat - 1) * log(i - self.t) - log(factorial(k_hat - 1)) - k_hat * log(100 / d)
+        return l_prob, new_param
 
     def _Sa(self, s, d):
-        result = 0
+        result, addl_params = 0, 0
         for i in s:
-            result += self._Fa(i, d)
-        return result
+            fa, new_param = self._Fa(i, d)
+            if new_param:
+                addl_params += 1
+            result += fa
+        return result, addl_params
 
     def _p(self, d):
         return exp((-d * self.t) / 100)
@@ -226,8 +233,9 @@ class Relation(Background):
         result += self._Np(np)
         result += self._Na(na, d)
         result += self._Sp(s[:np])
-        result += self._Sa(s[np:], d)
-        return result
+        sa, addl_params = self._Sa(s[np:], d)
+        result += sa
+        return result, addl_params
 
     def MLL(self, n, s, d):
         """
@@ -254,12 +262,12 @@ class Relation(Background):
         """
         max_mll, max_np = None, None
         for np in range(n + 1):
-            mll = self._LLr(np, n - np, s, d)
+            mll, addl_params = self._LLr(np, n - np, s, d)
             if max_mll is None:
-                max_mll, max_np = mll, np
+                max_mll, max_np, addl_params = mll, np, addl_params
             elif max_mll < mll:
-                max_mll, max_np = mll, np
-        return max_np, max_mll
+                max_mll, max_np, addl_params = mll, np, addl_params
+        return max_np, max_mll, addl_params
 
 
 class Estimate:
@@ -331,12 +339,20 @@ def estimate_relation(pair, dob, n, s, h0, ha, max_d, alpha, ci=False):
 
     alts = []
     for d in range(1, max_d + 1):
-        alt_np, alt_MLL = ha.MLL(n, s, d)
-        alts.append((d - 1, alt_np, alt_MLL))  # subtract one from d since a = 2
+        alt_np, alt_MLL, addl_params = ha.MLL(n, s, d)
+        alts.append((d - 1, alt_np, alt_MLL, addl_params))  # subtract one from d since a = 2
     max_alt = max(alts, key=itemgetter(2))
-    d = max_alt[0]
-    np = max_alt[1]
-    max_LL = max_alt[2]
+    d, np, max_LL, addl_params = max_alt[0], max_alt[1], max_alt[2], max_alt[3]
+    if d == 2:
+        alts_less_2 = []
+        for alt in alts:
+            if alt[0] != 2:
+                alts_less_2.append(alt)
+        second_max_alt = max(alts_less_2, key=itemgetter(2))
+        second_max_LL = second_max_alt[2]
+        reject_for_d2 = LL_ratio_test(max_LL, second_max_LL, alpha, df=addl_params)
+        if not reject_for_d2:
+            max_alt = second_max_alt
 
     reject = LL_ratio_test(max_LL, null_LL, alpha)
     lower_d, upper_d = None, None
