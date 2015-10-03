@@ -15,7 +15,7 @@ class Segment(Base):
     __tablename__ = "ersa_segment"
     id = Column(Integer, primary_key=True)
     result_id = Column(Integer, ForeignKey("ersa_result.id"), index=True)
-    chromosome = Column(Integer, nullable=False)
-    bp_start = Column(Integer, nullable=False)
-    bp_end = Column(Integer, nullable=False)
-    length = Column(Float, nullable=False)
+    chromosome = Column(Integer, nullable=False, index=True)
+    bp_start = Column(Integer, nullable=False, index=True)
+    bp_end = Column(Integer, nullable=False, index=True)
+    length = Column(Float, nullable=False, index=True)
