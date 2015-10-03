@@ -200,7 +200,11 @@ class Relation(Background):
         return exp((-d * self.t) / 100)
 
     def _Na(self, n, d):
-        lambda_ = (self.a * (self.r * d + self.c) * self._p(d)) / (2 ** (d - 1))
+        if d != 2:
+            lambda_ = (self.a * (self.r * d + self.c) * self._p(d)) / (2 ** (d - 1))
+        else:
+            # Equation S1
+            lambda_ = (3/4) * self.c + 2 * d * self.r * (3/4) * (1/4)
         l_prob = n * log(lambda_) - lambda_ - log(factorial(n))
         return l_prob
 
