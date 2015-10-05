@@ -14,7 +14,7 @@ MAINTAINER_EMAIL = "rmunoz@columbia.edu"
 DOWNLOAD_URL = 'http://github.com/rmunoz12/ersa'
 LICENSE = 'GNU General Public License v3 (GPLv3)'
 
-VERSION = '1.0.2'
+VERSION = '1.0.6'
 
 setup(name=NAME,
       version=VERSION,

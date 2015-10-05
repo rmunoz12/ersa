@@ -139,6 +139,9 @@ class Relation(Background):
         the sample mean of the number of segments shared
         in the population
 
+    first_deg_adj : bool
+        Controls whether first degree adjustment equations should be used
+
     Notes
     -----
     Lr = La(na, sa | d, a, t) * Lp(np, sp | t)
@@ -179,19 +182,18 @@ class Relation(Background):
     -------
     Class Background
     """
-    def __init__(self, c, r, t, theta, lambda_):
+    def __init__(self, c, r, t, theta, lambda_, first_deg_adj = False):
         super(Relation, self).__init__(t, theta, lambda_)
         self.c = c
         self.r = r
         self.a = 2  # see Huff et al 2011 supplemental material
+        self.first_deg_adj = first_deg_adj
 
     def _Fa(self, i, d):
         assert i >= self.t
         new_param = False
         l_prob = (-d * (i - self.t) / 100)
-        if d != 2:
-            l_prob += -log(100 / d)
-        else:
+        if self.first_deg_adj and d == 2:
             # Equation S2
             # k_hat reference:
             # https://en.wikipedia.org/wiki/Gamma_distribution#Maximum_likelihood_estimation
@@ -204,6 +206,8 @@ class Relation(Background):
             else:
                 l_prob += -2 ** 20  # log is undefined, use small number
             l_prob += -log(factorial(k_hat - 1)) - k_hat * log(100 / d)
+        else:
+            l_prob += -log(100 / d)
         return l_prob, new_param
 
     def _Sa(self, s, d):
@@ -219,11 +223,11 @@ class Relation(Background):
         return exp((-d * self.t) / 100)
 
     def _Na(self, n, d):
-        if d != 2:
-            lambda_ = (self.a * (self.r * d + self.c) * self._p(d)) / (2 ** (d - 1))
-        else:
+        if self.first_deg_adj and d == 2:
             # Equation S1
             lambda_ = (3/4) * self.c + 2 * d * self.r * (3/4) * (1/4)
+        else:
+            lambda_ = (self.a * (self.r * d + self.c) * self._p(d)) / (2 ** (d - 1))
         l_prob = n * log(lambda_) - lambda_ - log(factorial(n))
         return l_prob
 
@@ -353,7 +357,7 @@ def estimate_relation(pair, dob, n, s, h0, ha, max_d, alpha, ci=False):
         alts.append((d - 1, alt_np, alt_MLL, addl_params))  # subtract one from d since a = 2
     max_alt = max(alts, key=itemgetter(2))
     d, np, max_LL, addl_params = max_alt[0], max_alt[1], max_alt[2], max_alt[3]
-    if d == 1:
+    if ha.first_deg_adj and d == 1:
         alts_less_2 = []
         for alt in alts:
             if alt[0] != 1:
@@ -448,7 +452,8 @@ def _build_rel_map(dmax=20):
     ----------
     https://en.wikipedia.org/wiki/File:Table_of_Consanguinity_showing_degrees_of_relationship.png
     """
-    rel_map = {1: {-1: "Parent", 1: "Child"},
+    rel_map = {0: {0: "Identical Twins or Duplication"},
+               1: {-1: "Parent", 1: "Child"},
                2: {-2: "Grandparent", 0: "Sibling", 2: "Grandchild"},
                3: {-3: "Great Grandparent", -1: "Aunt/Uncle", 1: "Niece/Nephew", 3: "Great Grandchild"}}
     for d in range(4, dmax + 1):
@@ -524,7 +529,10 @@ def potential_relationship(d_est, indv1, indv2, dob1, dob2):
     """
     yr_per_gen = 30
     delta = dob2 - dob1
-    gen_bin = (delta + yr_per_gen / 2) // yr_per_gen
+    if d_est == 0:
+        gen_bin = 0
+    else:
+        gen_bin = (delta + yr_per_gen / 2) // yr_per_gen
     if d_est not in potential_relationship.rel_map:
         return None
     if gen_bin not in potential_relationship.rel_map[d_est]:

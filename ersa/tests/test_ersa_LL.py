@@ -68,8 +68,10 @@ class TestRelation():
         fa, new_param = self.R._Fa(10, 2)
         assert fa == -2 * (10 - self.R.t) / 100 - log(100 / 2)
 
+        self.R.first_deg_adj = True
         fa, new_param = self.R._Fa(99, 2)
         assert fa == log(99 - self.R.t) - log(factorial(1)) - 2 * (99 - self.R.t) / 100 - 2 *log(100 / 2)
+        self.R.first_deg_adj = False
 
     def test_Sa(self):
         d = 4
@@ -90,10 +92,10 @@ class TestRelation():
     def test_Na(self):
         for n in range(5):
             for d in range(1, 5):
-                if d !=2:
-                    lambda_ = (self.R.a * (self.r * d + self.c) * self.R._p(d)) / (2 ** (d - 1))
-                else:
+                if self.R.first_deg_adj and d == 2:
                     lambda_ = (3/4) * self.R.c + 2 * d * self.R.r * (3/4) * (1/4)
+                else:
+                    lambda_ = (self.R.a * (self.r * d + self.c) * self.R._p(d)) / (2 ** (d - 1))
                 Na_obs = self.R._Na(n, d)
                 Na_exp = log(poisson.pmf(n, lambda_))
                 assert Na_obs == Na_exp
@@ -111,10 +113,12 @@ class TestRelation():
             assert mlr_obs == mlr_exp
 
     def test_MLL(self):
+        self.R.first_deg_adj = True
         max_np, max_mll, addl_params = self.R.MLL(1, [4], 2)
         assert max_np == 1
         assert addl_params == 0
         assert max_mll == -6.6405620875658995
+        self.R.first_deg_adj = False
 
         max_np, max_mll, addl_params = self.R.MLL(5, [10, 5, 3], 8)
         assert max_np == 5
