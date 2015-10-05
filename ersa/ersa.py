@@ -26,6 +26,8 @@ def get_args():
                    action='store_true')
     p.add_argument("-d", "--dmax", help="max combined number of generations to test (default: %(default)d)",
                    type=int, default=10)
+    p.add_argument("--first_deg_adj", help="Include adjustments for first-degree relationships",
+                   action="store_true")
     p.add_argument("-H", help="input matchfile contains an extra column at the end of each line with haploscores (discarded by ersa)",
                    action='store_true')
     p.add_argument("-l", help="mean number of segments shared in the population (default: %(default).1f)",
@@ -72,7 +74,7 @@ def main():
     pair_dict = get_pair_dict(args.matchfile, args.t, args.user, args.H)
 
     h0 = Background(args.t, args.theta, args.l)
-    ha = Relation(args.c, args.r, args.t, args.theta, args.l)
+    ha = Relation(args.c, args.r, args.t, args.theta, args.l, args.first_deg_adj)
 
     print("--- {} seconds ---".format(round(time() - start_time, 3)))
     print()
