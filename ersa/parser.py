@@ -73,7 +73,7 @@ def read_matchfile(path, haploscores=False):
             yield segment
 
 
-def get_pair_dict(path, t, user=None, haploscores=False, masking=False):
+def get_pair_dict(path, t, user=None, haploscores=False, nomask=False):
     """
     Reads from path and collapses the input data into a dictionary
     mapping pairs to SharedSegments.
@@ -119,7 +119,7 @@ def get_pair_dict(path, t, user=None, haploscores=False, masking=False):
             pair_dict[pair_id] = [seg]
 
     for pair, segs in pair_dict.items():
-        if masking:
+        if not nomask:
             segs = mask_input_segs(segs, t)
             pair_dict[pair] = segs
         segs.sort()

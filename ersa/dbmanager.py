@@ -137,12 +137,13 @@ class Database:
                                                 na=(len(est.s) - np))
             result_id = inserted_result.inserted_primary_key[0]
 
-            insert_seg = Segment.__table__.insert()
-            self.conn.execute(insert_seg,
-                              [{'result_id': result_id, 'chromosome': seg.chrom,
-                                'bp_start': seg.bpStart, 'bp_end': seg.bpEnd,
-                                'length': seg.length}
-                               for seg in seg_list])
+            if len(seg_list) > 0:
+                insert_seg = Segment.__table__.insert()
+                self.conn.execute(insert_seg,
+                                  [{'result_id': result_id, 'chromosome': seg.chrom,
+                                    'bp_start': seg.bpStart, 'bp_end': seg.bpEnd,
+                                    'length': seg.length}
+                                   for seg in seg_list])
 
     def delete(self):
         """

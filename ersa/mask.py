@@ -23,7 +23,7 @@ masked : list[list[Tuple[int, int]]
     in total there are 14 regions and 119.92 cM;
     all masked regions are of at least 5 cM
 """
-masked = [[(0, 0, 0)]] * 23
+masked = [[] for x in range(23)]
 masked[9].append((38293483, 72605261, 8.15))
 masked[8].append((10428647, 13469693, 7.96))
 masked[21].append((16344186, 19375168, 6.91))
@@ -58,12 +58,8 @@ def mask_input_segs(segs, t):
     new_segs : list[SharedSegment]
         modified segs list, with modified lengths and
         fully masked segments removed
-
-    m : float
-        total masked length
     """
     new_segs = []
-    m = 0
     for s in segs:
         regions = masked[s.chrom]
         for r in regions:
@@ -78,7 +74,6 @@ def mask_input_segs(segs, t):
                 # subtract len but keep start & end
                 # for visual display
                 s.length -= - mask_cm
-                m += mask_cm
                 break
             elif l <= s.bpStart <= h:
                 if s.bpEnd > h:
@@ -95,7 +90,7 @@ def mask_input_segs(segs, t):
                     break
             elif l <= s.bpEnd <= h:
                 if s.bpStart < l:
-                    # truncate, changing start
+                    # truncate, changing end
                     # for the visual display
                     # TODO better bp -> cM conversion?
                     ratio = (l - s.bpStart) / (s.bpEnd - s.bpStart)
@@ -110,3 +105,18 @@ def mask_input_segs(segs, t):
             new_segs.append(s)
 
     return new_segs
+
+
+def total_masked():
+    """
+    Returns the sum of the lengths of masked regions in cM
+
+    Returns
+    -------
+    m : float
+    """
+    m = 0
+    for c in masked:
+        for r in c:
+            m += r[2]
+    return m
