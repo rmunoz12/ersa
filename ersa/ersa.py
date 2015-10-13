@@ -32,6 +32,8 @@ def get_args():
                    action='store_true')
     p.add_argument("-l", help="mean number of segments shared in the population (default: %(default).1f)",
                    type=float, default=13.73)
+    p.add_argument("--nomask", help="disable genomic region masking",
+                   action="store_false", default=True)
     p.add_argument("-r", help="expected number of recombination events per haploid genome per generation (default %(default).1f for humans)",
                    type=float, default=35.2548101)
     p.add_argument("-t", help="min segment length (in cM) to include in comparisons (default %(default).1f)",
@@ -71,7 +73,7 @@ def main():
 
     print("--- Reading match file ---")
 
-    pair_dict = get_pair_dict(args.matchfile, args.t, args.user, args.H)
+    pair_dict = get_pair_dict(args.matchfile, args.t, args.user, args.H, args.nomask)
 
     h0 = Background(args.t, args.theta, args.l)
     ha = Relation(args.c, args.r, args.t, args.theta, args.l, args.first_deg_adj)
@@ -86,11 +88,13 @@ def main():
         print("processing {:,} pairs..".format(n_pairs))
         ests, seg_lists = [], []
         for est, seg_list in gen_estimates(args, h0, ha, pair_dict):
-            ests.append(est)
-            seg_lists.append(seg_list)
-        print("pushing results to database..")
-        with DbManager(args.D) as db:
-            db.insert(ests, seg_lists)
+            if len(seg_list) > 0:
+                ests.append(est)
+                seg_lists.append(seg_list)
+        if len(ests) > 0:
+            print("pushing results to database..")
+            with DbManager(args.D) as db:
+                db.insert(ests, seg_lists)
     else:
         output_file = open(args.ofile, "w") if args.ofile else stdout
         print("{:<20} {:<20} {:<10} {:<10} {:>10} {:>10} {:>10}"

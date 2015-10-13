@@ -100,8 +100,8 @@ class Database:
 
         seg_lists : list[list[SharedSegment]]
         """
-        assert isinstance(ests[0], Estimate)
-        assert isinstance(seg_lists[0][0], SharedSegment)
+        # assert isinstance(ests[0], Estimate)
+        # assert isinstance(seg_lists[0][0], SharedSegment)
 
         pairs = []
         for est in ests:
