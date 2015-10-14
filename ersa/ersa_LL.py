@@ -290,7 +290,6 @@ class Estimate:
     def __init__(self, pair, dob, d, reject, null_LL, max_LL, lower_d, upper_d, alts, s, np):
         self.indv1, self.indv2 = pair.split(':')
         self.dob = dob
-        self.d = d
         self.reject = reject
         self.alts = alts
         self.s = s
@@ -306,9 +305,16 @@ class Estimate:
                     years[0], years[1] = 0, 0
                 else:
                     years[0], years[1] = 0, 31
-            self.rel_est = potential_relationship(self.d, self.indv1, self.indv2, years[0], years[1])
+            self.rel_est = potential_relationship(d, self.indv1, self.indv2, years[0], years[1])
         else:
             self.rel_est = None
+        # "collapse" d from number of meiosis to
+        # relationship degree. Note that for d > 1
+        # this is just a shift, but for d = 1
+        # the new d becomes 0, which in reality should
+        # still be d = 1 since the algorithm
+        # does not test for MZ twins.
+        self.d = d - 1
 
 
 def estimate_relation(pair, dob, n, s, h0, ha, max_d, alpha, ci=False):
@@ -365,7 +371,7 @@ def estimate_relation(pair, dob, n, s, h0, ha, max_d, alpha, ci=False):
     if ha.first_deg_adj and d == 2:
         alts_less_2 = []
         for alt in alts:
-            if alt[0] != 1:
+            if alt[0] != 2:
                 alts_less_2.append(alt)
         second_max_alt = max(alts_less_2, key=itemgetter(2))
         second_max_LL = second_max_alt[2]
