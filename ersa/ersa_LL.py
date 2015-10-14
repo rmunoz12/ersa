@@ -354,10 +354,10 @@ def estimate_relation(pair, dob, n, s, h0, ha, max_d, alpha, ci=False):
     alts = []
     for d in range(1, max_d + 1):
         alt_np, alt_MLL, addl_params = ha.MLL(n, s, d)
-        alts.append((d - 1, alt_np, alt_MLL, addl_params))  # subtract one from d since a = 2
+        alts.append((d, alt_np, alt_MLL, addl_params))
     max_alt = max(alts, key=itemgetter(2))
     d, np, max_LL, addl_params = max_alt[0], max_alt[1], max_alt[2], max_alt[3]
-    if ha.first_deg_adj and d == 1:
+    if ha.first_deg_adj and d == 2:
         alts_less_2 = []
         for alt in alts:
             if alt[0] != 1:
