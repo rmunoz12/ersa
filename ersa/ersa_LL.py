@@ -73,7 +73,7 @@ class Background:
 
     def _Fp(self, i):
         assert i >= self.t
-        l_prob = -(i - self.t) / (self.theta - self.t) - log(self.theta - self.t)
+        l_prob = -(i - self.t) / self.theta - log(self.theta)
         return l_prob
 
     def _Sp(self, s):
