@@ -13,6 +13,7 @@ to estimate relationships.
 from math import exp, log, factorial
 from operator import itemgetter
 from ersa.chisquare import LL_ratio_test, likelihood_ratio_CI
+from ersa.mask import total_masked
 import inflect
 
 class Background:
@@ -182,10 +183,14 @@ class Relation(Background):
     -------
     Class Background
     """
-    def __init__(self, c, r, t, theta, lambda_, first_deg_adj = False):
+    def __init__(self, c, r, t, theta, lambda_, first_deg_adj=False, nomask=False):
         super(Relation, self).__init__(t, theta, lambda_)
         self.c = c
-        self.r = r
+        if nomask:
+            self.r = r
+        else:
+            m = total_masked()
+            self.r = r - m / 100
         self.a = 2  # see Huff et al 2011 supplemental material
         self.first_deg_adj = first_deg_adj
 
