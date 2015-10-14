@@ -73,34 +73,26 @@ def mask_input_segs(segs, t):
             elif s.bpStart <= l - b and s.bpEnd >= h + b:
                 # subtract len but keep start & end
                 # for visual display
-                s.length -= - mask_cm
+                s.length -= mask_cm
                 break
-            elif l <= s.bpStart <= h:
-                if s.bpEnd > h:
-                    # truncate, changing start
-                    # for the visual display
-                    # TODO better bp -> cM conversion?
-                    ratio = (s.bpEnd - h) / (s.bpEnd - s.bpStart)
-                    s.length *= ratio
-                    s.length = round(s.length, 2)
-                    s.bpStart = h
-                    break
-                else:
-                    s.length = 0
-                    break
-            elif l <= s.bpEnd <= h:
-                if s.bpStart < l:
-                    # truncate, changing end
-                    # for the visual display
-                    # TODO better bp -> cM conversion?
-                    ratio = (l - s.bpStart) / (s.bpEnd - s.bpStart)
-                    s.length *= ratio
-                    s.length = round(s.length, 2)
-                    s.bpEnd = l
-                    break
-                else:
-                    s.length = 0
-                    break
+            elif l <= s.bpStart <= h < s.bpEnd:
+                # truncate, changing start
+                # for the visual display
+                # TODO better bp -> cM conversion?
+                ratio = (s.bpEnd - h) / (s.bpEnd - s.bpStart)
+                s.length *= ratio
+                s.length = round(s.length, 2)
+                s.bpStart = h
+                break
+            elif h >= s.bpEnd >= l > s.bpStart:
+                # truncate, changing end
+                # for the visual display
+                # TODO better bp -> cM conversion?
+                ratio = (l - s.bpStart) / (s.bpEnd - s.bpStart)
+                s.length *= ratio
+                s.length = round(s.length, 2)
+                s.bpEnd = l
+                break
         if s.length >= t:
             new_segs.append(s)
 
