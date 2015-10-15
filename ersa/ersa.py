@@ -32,6 +32,8 @@ def get_args():
                    action='store_true')
     p.add_argument("-l", help="mean number of segments shared in the population (default: %(default).1f)",
                    type=float, default=13.73)
+    p.add_argument("--nomask", help="disable genomic region masking",
+                   action="store_true")
     p.add_argument("-r", help="expected number of recombination events per haploid genome per generation (default %(default).1f for humans)",
                    type=float, default=35.2548101)
     p.add_argument("-t", help="min segment length (in cM) to include in comparisons (default %(default).1f)",
@@ -71,10 +73,10 @@ def main():
 
     print("--- Reading match file ---")
 
-    pair_dict = get_pair_dict(args.matchfile, args.t, args.user, args.H)
+    pair_dict = get_pair_dict(args.matchfile, args.t, args.user, args.H, args.nomask)
 
     h0 = Background(args.t, args.theta, args.l)
-    ha = Relation(args.c, args.r, args.t, args.theta, args.l, args.first_deg_adj)
+    ha = Relation(args.c, args.r, args.t, args.theta, args.l, args.first_deg_adj, args.nomask)
 
     print("--- {} seconds ---".format(round(time() - start_time, 3)))
     print()

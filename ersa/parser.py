@@ -7,6 +7,9 @@
 #   All rights reserved
 #   GPL license
 
+from ersa.mask import mask_input_segs
+
+
 class SharedSegment:
     """
     Structure that stores named values for a matchfile line, see
@@ -70,7 +73,7 @@ def read_matchfile(path, haploscores=False):
             yield segment
 
 
-def get_pair_dict(path, t, user=None, haploscores=False):
+def get_pair_dict(path, t, user=None, haploscores=False, nomask=False):
     """
     Reads from path and collapses the input data into a dictionary
     mapping pairs to SharedSegments.
@@ -115,7 +118,10 @@ def get_pair_dict(path, t, user=None, haploscores=False):
         else:
             pair_dict[pair_id] = [seg]
 
-    for k, v in pair_dict.items():
-        v.sort()
+    for pair, segs in pair_dict.items():
+        if not nomask:
+            segs = mask_input_segs(segs, t)
+            pair_dict[pair] = segs
+        segs.sort()
 
     return pair_dict

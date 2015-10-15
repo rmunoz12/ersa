@@ -13,6 +13,7 @@ to estimate relationships.
 from math import exp, log, factorial
 from operator import itemgetter
 from ersa.chisquare import LL_ratio_test, likelihood_ratio_CI
+from ersa.mask import total_masked
 import inflect
 
 class Background:
@@ -72,7 +73,7 @@ class Background:
 
     def _Fp(self, i):
         assert i >= self.t
-        l_prob = -(i - self.t) / (self.theta - self.t) - log(self.theta - self.t)
+        l_prob = -(i - self.t) / self.theta - log(self.theta)
         return l_prob
 
     def _Sp(self, s):
@@ -182,10 +183,14 @@ class Relation(Background):
     -------
     Class Background
     """
-    def __init__(self, c, r, t, theta, lambda_, first_deg_adj = False):
+    def __init__(self, c, r, t, theta, lambda_, first_deg_adj=False, nomask=False):
         super(Relation, self).__init__(t, theta, lambda_)
         self.c = c
-        self.r = r
+        if nomask:
+            self.r = r
+        else:
+            m = total_masked()
+            self.r = r - m / 100
         self.a = 2  # see Huff et al 2011 supplemental material
         self.first_deg_adj = first_deg_adj
 
@@ -285,7 +290,6 @@ class Estimate:
     def __init__(self, pair, dob, d, reject, null_LL, max_LL, lower_d, upper_d, alts, s, np):
         self.indv1, self.indv2 = pair.split(':')
         self.dob = dob
-        self.d = d
         self.reject = reject
         self.alts = alts
         self.s = s
@@ -301,9 +305,16 @@ class Estimate:
                     years[0], years[1] = 0, 0
                 else:
                     years[0], years[1] = 0, 31
-            self.rel_est = potential_relationship(self.d, self.indv1, self.indv2, years[0], years[1])
+            self.rel_est = potential_relationship(d, self.indv1, self.indv2, years[0], years[1])
         else:
             self.rel_est = None
+        # "collapse" d from number of meiosis to
+        # relationship degree. Note that for d > 1
+        # this is just a shift, but for d = 1
+        # the new d becomes 0, which in reality should
+        # still be d = 1 since the algorithm
+        # does not test for MZ twins.
+        self.d = d - 1
 
 
 def estimate_relation(pair, dob, n, s, h0, ha, max_d, alpha, ci=False):
@@ -354,13 +365,13 @@ def estimate_relation(pair, dob, n, s, h0, ha, max_d, alpha, ci=False):
     alts = []
     for d in range(1, max_d + 1):
         alt_np, alt_MLL, addl_params = ha.MLL(n, s, d)
-        alts.append((d - 1, alt_np, alt_MLL, addl_params))  # subtract one from d since a = 2
+        alts.append((d, alt_np, alt_MLL, addl_params))
     max_alt = max(alts, key=itemgetter(2))
     d, np, max_LL, addl_params = max_alt[0], max_alt[1], max_alt[2], max_alt[3]
-    if ha.first_deg_adj and d == 1:
+    if ha.first_deg_adj and d == 2:
         alts_less_2 = []
         for alt in alts:
-            if alt[0] != 1:
+            if alt[0] != 2:
                 alts_less_2.append(alt)
         second_max_alt = max(alts_less_2, key=itemgetter(2))
         second_max_LL = second_max_alt[2]

@@ -53,7 +53,7 @@ class TestRelation():
     t = 3
     theta = 4
     lambda_ = 5
-    R = Relation(c, r, t, theta, lambda_)
+    R = Relation(c, r, t, theta, lambda_, nomask=True)
 
     def test_Fa(self):
         with pytest.raises(AssertionError):
@@ -144,9 +144,9 @@ def test_estimate_relation():
     c = 22                  # human autosomes
     alpha = 0.05
 
-    pair_dict = get_pair_dict('ersa/tests/test_data/test_LL.match', t)
+    pair_dict = get_pair_dict('ersa/tests/test_data/test_LL.match', t, nomask=True)
     h0 = Background(t, theta, lambda_)
-    ha = Relation(c, r, t, theta, lambda_)
+    ha = Relation(c, r, t, theta, lambda_, nomask=True)
     dob = (None, None)
     for pair, seg_list in pair_dict.items():
         s = [seg.length for seg in seg_list]
