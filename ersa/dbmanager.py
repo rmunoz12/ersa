@@ -120,7 +120,7 @@ class Database:
             LLs = "{"
             for i in range(len(est.alts)):
                 alt = est.alts[i]
-                LLs += "\"" + str(alt[0]) + "\"" + ":" + str(round(alt[2], 3))
+                LLs += "\"" + str(alt[0] - 1) + "\"" + ":" + str(round(alt[2], 3))
                 if i == len(est.alts) - 1:
                     LLs += "}"
                 else:
