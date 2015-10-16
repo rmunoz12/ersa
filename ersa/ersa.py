@@ -42,6 +42,8 @@ def get_args():
                    type=str)
     p.add_argument("-th", "--theta", help="mean shared segment length (in cM) in the population (default %(default).3f)",
                    type=float, default=3.197036753)
+    p.add_argument("--keep-insignificant", help="keep insignificant results where d_est is NULL (default: discard them)",
+                   action='store_true')
 
     group = p.add_mutually_exclusive_group()
     group.add_argument("-D", help="direct output to database D")
@@ -88,9 +90,12 @@ def main():
         print("processing {:,} pairs..".format(n_pairs))
         ests, seg_lists = [], []
         for est, seg_list in gen_estimates(args, h0, ha, pair_dict):
-            ests.append(est)
-            seg_lists.append(seg_list)
-        print("pushing results to database..")
+            # 'reject' => H0 is rejected, this pair is significant.
+            if est.reject or args.keep_insignificant:
+                ests.append(est)
+                seg_lists.append(seg_list)
+        print("pushing results from '{}' to database... " \
+              "({} pairs, {} segments)".format(args.matchfile, len(ests), len(seg_lists)))
         with DbManager(args.D) as db:
             db.insert(ests, seg_lists)
     else:
