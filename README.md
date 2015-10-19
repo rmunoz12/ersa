@@ -1,5 +1,5 @@
 # ersa
-`ersa` estimates the combined number of generations between pairs of individuals using a [Germline](http://www1.cs.columbia.edu/~gusev/germline/) matchfile as input.  It is an implementation of [Huff et. al. (2011) Maximum-Likelihood estimation of recent shared ancenstry (ERSA)](http://genome.cshlp.org/content/21/5/768.full).
+`ersa` estimates the combined number of generations between pairs of individuals using a [Germline](http://www1.cs.columbia.edu/~gusev/germline/) matchfile as input.  It is an implementation of [Huff et. al. (2011) Maximum-Likelihood estimation of recent shared ancenstry (ERSA)](http://genome.cshlp.org/content/21/5/768.full) and [Li et. al. (2014) Relationship Estimation from Whole-Genome Sequence Data](http://journals.plos.org/plosgenetics/article?id=10.1371/journal.pgen.1004144).
 
 Copyright (c) 2015 by
 - Richard Muñoz (rmunoz@nygenome.org)
