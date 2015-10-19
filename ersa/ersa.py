@@ -42,7 +42,7 @@ def get_args():
                    type=str)
     p.add_argument("-th", "--theta", help="mean shared segment length (in cM) in the population (default %(default).3f)",
                    type=float, default=3.197036753)
-    p.add_argument("--keep-insignificant", help="keep insignificant results where d_est is NULL (default: discard them)",
+    p.add_argument("--keep-insignificant", help="push insignificant results to the database where d_est is NULL (default: discard them)",
                    action='store_true')
     p.add_argument("--skip-soft-delete", help="Assume the database is empty, don't soft-delete before inserting new data",
                    action='store_true', default=False)
@@ -98,7 +98,7 @@ def main():
                 seg_lists.append(seg_list)
         print("pushing results from '{}' to database... " \
               "({} pairs, {} segments)".format(args.matchfile, len(ests), len(seg_lists)))
-        with DbManager(args.D,skip_soft_delete=args.skip_soft_delete) as db:
+        with DbManager(args.D, skip_soft_delete=args.skip_soft_delete) as db:
             db.insert(ests, seg_lists)
     else:
         output_file = open(args.ofile, "w") if args.ofile else stdout
