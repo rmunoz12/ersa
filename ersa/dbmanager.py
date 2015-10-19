@@ -32,6 +32,10 @@ class Database:
 
     shared_pool : bool
         Uses a SharedPool if true, otherwise a StaticPool
+
+    skip_soft_delete : bool
+        Don't soft delete previous records for a pair_id that
+        is inserted during self.insert().
     """
     def __init__(self, path, shared_pool=False, skip_soft_delete=False):
         if shared_pool:
@@ -202,6 +206,10 @@ class DbManager:
 
     shared_pool : bool
         Uses a SharedPool if true, otherwise a StaticPool
+
+    skip_soft_delete : bool
+        Don't soft delete previous records for a pair_id that
+        is inserted during the managed session.
 
     Example
     -------

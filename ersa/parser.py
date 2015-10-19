@@ -102,7 +102,7 @@ def get_pair_dict(path, t, user=None, haploscores=False, nomask=False):
     pair_dict = {}
     for seg in s_list:
         assert isinstance(seg, SharedSegment)
-        assert seg.lengthUnit == "cM"  # TODO add conversion to cM instead of assertion
+        assert seg.lengthUnit == "cM"
         if seg.length < t:  # Note: seg.length > h filtered only for background parameters
             continue
         if user and seg.indivID1 != user and seg.indivID2 != user:

@@ -78,7 +78,6 @@ def mask_input_segs(segs, t):
             elif l <= s.bpStart <= h < s.bpEnd:
                 # truncate, changing start
                 # for the visual display
-                # TODO better bp -> cM conversion?
                 ratio = (s.bpEnd - h) / (s.bpEnd - s.bpStart)
                 s.length *= ratio
                 s.length = round(s.length, 2)
@@ -87,7 +86,6 @@ def mask_input_segs(segs, t):
             elif h >= s.bpEnd >= l > s.bpStart:
                 # truncate, changing end
                 # for the visual display
-                # TODO better bp -> cM conversion?
                 ratio = (l - s.bpStart) / (s.bpEnd - s.bpStart)
                 s.length *= ratio
                 s.length = round(s.length, 2)
