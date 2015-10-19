@@ -33,7 +33,7 @@ class Database:
     shared_pool : bool
         Uses a SharedPool if true, otherwise a StaticPool
     """
-    def __init__(self, path, shared_pool=False):
+    def __init__(self, path, shared_pool=False, skip_soft_delete=False):
         if shared_pool:
             self.engine = create_engine(path, connect_args={'check_same_thread': False},
                                         poolclass=StaticPool)
@@ -46,6 +46,7 @@ class Database:
         Base.metadata.bind = self.engine
         self.conn = None
         self.trans = None
+        self.skip_soft_delete = skip_soft_delete
 
     def connect(self):
         """ Initiate a connection and begin a transaction """
@@ -108,7 +109,8 @@ class Database:
             p = est.indv1 + ":" + est.indv2
             pairs.append(p)
 
-        self.soft_delete(pairs)
+        if not self.skip_soft_delete:
+            self.soft_delete(pairs)
 
         for i in range(len(ests)):
             est, seg_list = ests[i], seg_lists[i]
@@ -210,12 +212,14 @@ class DbManager:
     --------
     Database
     """
-    def __init__(self, path, shared_pool=False):
+    def __init__(self, path, shared_pool=False, skip_soft_delete=False):
         self.path = path
         self.shared_pool = shared_pool
+        self.skip_soft_delete = skip_soft_delete
 
     def __enter__(self):
-        self.db = Database(self.path, self.shared_pool)
+        self.db = Database(self.path, shared_pool=self.shared_pool,
+                           skip_soft_delete=self.skip_soft_delete)
         self.db.connect()
         return self.db
 
