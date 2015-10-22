@@ -20,6 +20,8 @@ def get_args():
     p.add_argument("matchfile", help="input match file")
     p.add_argument("-a", "--alpha", help="significance level (default: %(default).2f)",
                    type=float, default=0.05)
+    p.add_argument("--avuncular-adj", help="apply the adjustment to Na from Li et al. (2014) for avuncular (a=2, d=3) relationships",
+                   action="store_true")
     p.add_argument("-c", help="number of autosomes (default: %(default)d for humans)",
                    type=int, default=22)
     p.add_argument("-ci", help="generate confidence intervals",
@@ -80,7 +82,8 @@ def main():
     pair_dict = get_pair_dict(args.matchfile, args.t, args.user, args.H, args.nomask)
 
     h0 = Background(args.t, args.theta, args.l)
-    ha = Relation(args.c, args.r, args.t, args.theta, args.l, args.first_deg_adj, args.nomask)
+    ha = Relation(args.c, args.r, args.t, args.theta, args.l,
+                  args.first_deg_adj, args.nomask, args.avuncular_adj)
 
     print("--- {} seconds ---".format(round(time() - start_time, 3)))
     print()

@@ -143,6 +143,9 @@ class Relation(Background):
     first_deg_adj : bool
         Controls whether first degree adjustment equations should be used
 
+    avuncular_adj : bool
+        Use Li et al (2014) Equation 9 for (a=2, d=3) relationships
+
     Notes
     -----
     Lr = La(na, sa | d, a, t) * Lp(np, sp | t)
@@ -183,7 +186,7 @@ class Relation(Background):
     -------
     Class Background
     """
-    def __init__(self, c, r, t, theta, lambda_, first_deg_adj=False, nomask=False):
+    def __init__(self, c, r, t, theta, lambda_, first_deg_adj=False, nomask=False, avuncular_adj=False):
         super(Relation, self).__init__(t, theta, lambda_)
         self.c = c
         if nomask:
@@ -193,6 +196,7 @@ class Relation(Background):
             self.r = r - m / 100
         self.a = 2  # see Huff et al 2011 supplemental material
         self.first_deg_adj = first_deg_adj
+        self.avuncular_adj = avuncular_adj
 
     def _Fa(self, i, d):
         assert i >= self.t
@@ -231,6 +235,8 @@ class Relation(Background):
         if self.first_deg_adj and d == 2:
             # Equation S1
             lambda_ = (3/4) * self.c + 2 * d * self.r * (3/4) * (1/4)
+        elif self.avuncular_adj and d == 3:
+            lambda_ = (3/4) * self.c + 4 * self.r * ((3/4) * (1/4))
         else:
             lambda_ = (self.a * (self.r * d + self.c) * self._p(d)) / (2 ** (d - 1))
         l_prob = n * log(lambda_) - lambda_ - log(factorial(n))
