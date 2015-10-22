@@ -125,6 +125,23 @@ class TestRelation():
         assert max_mll == -8.35813328956702
 
 
+class TestRelationAvuncular():
+    c = 1
+    r = 2
+    t = 3
+    theta = 4
+    lambda_ = 5
+    R = Relation(c, r, t, theta, lambda_, nomask=True, avuncular_adj=True)
+
+    def test_Na(self):
+        d = 3
+        for n in range(5):
+            lambda_ = (3/4) * (self.r + self.c)
+            Na_obs = self.R._Na(n, d)
+            Na_exp = log(poisson.pmf(n, lambda_))
+            assert Na_obs == Na_exp
+
+
 def test_estimate_relation():
     """
     Uses hypothetical data to check:
