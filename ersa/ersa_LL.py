@@ -140,6 +140,9 @@ class Relation(Background):
         the sample mean of the number of segments shared
         in the population
 
+    a : int
+        number of ancestors (must be 0 or 2)
+
     first_deg_adj : bool
         Controls whether first degree adjustment equations should be used
 
@@ -187,6 +190,8 @@ class Relation(Background):
     Class Background
     """
     def __init__(self, c, r, t, theta, lambda_, a, first_deg_adj=False, nomask=False, avuncular_adj=False):
+        assert a is 0 or a is 2
+
         super(Relation, self).__init__(t, theta, lambda_)
         self.c = c
         if nomask:
