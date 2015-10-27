@@ -53,7 +53,8 @@ class TestRelation():
     t = 3
     theta = 4
     lambda_ = 5
-    R = Relation(c, r, t, theta, lambda_, nomask=True)
+    a = 2
+    R = Relation(c, r, t, theta, lambda_, a, nomask=True)
 
     def test_Fa(self):
         with pytest.raises(AssertionError):
@@ -132,7 +133,8 @@ class TestRelationAvuncular():
     t = 3
     theta = 4
     lambda_ = 5
-    R = Relation(c, r, t, theta, lambda_, nomask=True, avuncular_adj=True)
+    a = 2
+    R = Relation(c, r, t, theta, lambda_, a, nomask=True, avuncular_adj=True)
 
     def test_Na(self):
         d = 3
@@ -160,16 +162,18 @@ def test_estimate_relation():
     lambda_ = 13.73         #
     r = 35.2548101          # ~for humans
     c = 22                  # human autosomes
+    a = 2
     alpha = 0.05
 
     pair_dict = get_pair_dict('ersa/tests/test_data/test_LL.match', t, nomask=True)
     h0 = Background(t, theta, lambda_)
-    ha = Relation(c, r, t, theta, lambda_, nomask=True)
+    ha0 = None
+    ha2 = Relation(c, r, t, theta, lambda_, a, nomask=True)
     dob = (None, None)
     for pair, seg_list in pair_dict.items():
         s = [seg.length for seg in seg_list]
         n = len(s)
-        est = estimate_relation(pair, dob, n, s, h0, ha, MAX_D, alpha, True)
+        est = estimate_relation(pair, dob, n, s, h0, ha0, ha2, MAX_D, alpha, True)
         if pair == 'TestA:TestB':
             assert est.null_LL == -28.77225606065412
             assert est.max_LL == -26.926635378673502

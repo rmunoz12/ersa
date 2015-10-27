@@ -20,6 +20,8 @@ def get_args():
     p.add_argument("matchfile", help="input match file")
     p.add_argument("-a", "--alpha", help="significance level (default: %(default).2f)",
                    type=float, default=0.05)
+    p.add_argument("--direct-ancestors", help="enable testing of direct ancestor-descendant relationships (a=0)",
+                   action="store_true")
     p.add_argument("--avuncular-adj", help="apply the adjustment to Na from Li et al. (2014) for avuncular (a=2, d=3) relationships",
                    action="store_true")
     p.add_argument("-c", help="number of autosomes (default: %(default)d for humans)",
@@ -57,18 +59,28 @@ def get_args():
     return args
 
 
-def gen_estimates(args, h0, ha, pair_dict):
+def gen_estimates(args, pair_dict):
     """
     Returns
     -------
     (est, seg_list) : (Estimate, list[ersa.parser.SharedSegment])
         Tuple of estimate results and corresponding segment list.
     """
+
+    h0 = Background(args.t, args.theta, args.l)
+    if args.direct_ancestors:
+        ha0 = Relation(args.c, args.r, args.t, args.theta, args.l, 0,
+                       args.first_deg_adj, args.nomask, args.avuncular_adj)
+    else:
+        ha0 = None
+    ha2 = Relation(args.c, args.r, args.t, args.theta, args.l, 2,
+                   args.first_deg_adj, args.nomask, args.avuncular_adj)
+
     for pair, seg_list in pair_dict.items():
         dob = (None, None)  # TODO get dob from file
         s = [seg.length for seg in seg_list]
         n = len(s)
-        est = estimate_relation(pair, dob, n, s, h0, ha, args.dmax, args.alpha, args.ci)
+        est = estimate_relation(pair, dob, n, s, h0, ha0, ha2, args.dmax, args.alpha, args.ci)
         yield est, seg_list
 
 
@@ -81,10 +93,6 @@ def main():
 
     pair_dict = get_pair_dict(args.matchfile, args.t, args.user, args.H, args.nomask)
 
-    h0 = Background(args.t, args.theta, args.l)
-    ha = Relation(args.c, args.r, args.t, args.theta, args.l,
-                  args.first_deg_adj, args.nomask, args.avuncular_adj)
-
     print("--- {} seconds ---".format(round(time() - start_time, 3)))
     print()
 
@@ -94,7 +102,7 @@ def main():
         n_pairs = len(pair_dict)
         print("processing {:,} pairs..".format(n_pairs))
         ests, seg_lists = [], []
-        for est, seg_list in gen_estimates(args, h0, ha, pair_dict):
+        for est, seg_list in gen_estimates(args, pair_dict):
             # 'reject' => H0 is rejected, this pair is significant.
             if est.reject or args.keep_insignificant:
                 ests.append(est)
@@ -108,7 +116,7 @@ def main():
         print("{:<20} {:<20} {:<10} {:<10} {:>10} {:>10} {:>10}"
               .format("Indv_1", "Indv_2", "Rel_est1", "Rel_est2", "d_est", "N_seg", "Tot_cM"),
               file=output_file)
-        for est, seg_list in gen_estimates(args, h0, ha, pair_dict):
+        for est, seg_list in gen_estimates(args, pair_dict):
             d_est = est.d if est.reject else "NA"
             s = sum([seg.length for seg in seg_list])
             if est.rel_est is None:

@@ -186,7 +186,7 @@ class Relation(Background):
     -------
     Class Background
     """
-    def __init__(self, c, r, t, theta, lambda_, first_deg_adj=False, nomask=False, avuncular_adj=False):
+    def __init__(self, c, r, t, theta, lambda_, a, first_deg_adj=False, nomask=False, avuncular_adj=False):
         super(Relation, self).__init__(t, theta, lambda_)
         self.c = c
         if nomask:
@@ -194,7 +194,7 @@ class Relation(Background):
         else:
             m = total_masked()
             self.r = r - m / 100
-        self.a = 2  # see Huff et al 2011 supplemental material
+        self.a = a
         self.first_deg_adj = first_deg_adj
         self.avuncular_adj = avuncular_adj
 
@@ -327,7 +327,7 @@ class Estimate:
         self.d = d - 1
 
 
-def estimate_relation(pair, dob, n, s, h0, ha, max_d, alpha, ci=False):
+def estimate_relation(pair, dob, n, s, h0, ha0, ha2, max_d, alpha, ci=False):
     """
     Tests a pair of individuals for a relation.  Requires s to be a
     pre-sorted list of shared segments, from smallest to largest.
@@ -349,7 +349,11 @@ def estimate_relation(pair, dob, n, s, h0, ha, max_d, alpha, ci=False):
 
     h0 : Background
 
-    ha : Relation
+    ha0 : Relation  | None
+        Number of ancestors (a) = 0
+
+    ha2 : Relation
+        Number of ancestors (a) = 2
 
     max_d : int
         Maximum d to test
@@ -366,7 +370,9 @@ def estimate_relation(pair, dob, n, s, h0, ha, max_d, alpha, ci=False):
 
     """
     assert isinstance(h0, Background)
-    assert isinstance(ha, Relation)
+    if ha0:
+        assert isinstance(ha0, Relation)
+    assert isinstance(ha2, Relation)
     for i in range(1, len(s)):
         assert s[i - 1] <= s[i]
 
@@ -374,7 +380,7 @@ def estimate_relation(pair, dob, n, s, h0, ha, max_d, alpha, ci=False):
 
     alts = []
     for d in range(1, max_d + 1):
-        alt_np, alt_MLL = ha.MLL(n, s, d)
+        alt_np, alt_MLL = ha2.MLL(n, s, d)
         alts.append((d, alt_np, alt_MLL))
     max_alt = max(alts, key=itemgetter(2))
     d, np, max_LL = max_alt[0], max_alt[1], max_alt[2]

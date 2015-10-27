@@ -21,15 +21,17 @@ def get_test_data():
     lambda_ = 13.73         #
     r = 35.2548101          # ~for humans
     c = 22                  # human autosomes
+    a = 2                   # two common ancestors
     alpha = 0.05
     pair_dict = get_pair_dict('ersa/tests/test_data/test_LL.match', t)
     h0 = Background(t, theta, lambda_)
-    ha = Relation(c, r, t, theta, lambda_)
+    ha0 = None
+    ha2 = Relation(c, r, t, theta, lambda_, a)
     dob = (None, None)
     for pair, seg_list in pair_dict.items():
         s = [seg.length for seg in seg_list]
         n = len(s)
-        est = estimate_relation(pair, dob, n, s, h0, ha, MAX_D, alpha)
+        est = estimate_relation(pair, dob, n, s, h0, ha0, ha2, MAX_D, alpha)
         yield est, seg_list
 
 
