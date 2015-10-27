@@ -10,7 +10,7 @@ to estimate relationships.
 #   All rights reserved
 #   GPL license
 
-from math import exp, log, factorial
+from math import exp, log, factorial, log1p
 from operator import itemgetter
 from ersa.chisquare import LL_ratio_test, likelihood_ratio_CI
 from ersa.mask import total_masked
@@ -198,44 +198,48 @@ class Relation(Background):
         self.first_deg_adj = first_deg_adj
         self.avuncular_adj = avuncular_adj
 
-    def _Fa(self, i, d):
+    def _Fa(self, i, d, k_max=200):
         assert i >= self.t
-        new_param = False
-        l_prob = (-d * (i - self.t) / 100)
         if self.first_deg_adj and d == 2:
-            # Equation S2
-            # k_hat reference:
-            # https://en.wikipedia.org/wiki/Gamma_distribution#Maximum_likelihood_estimation
-            k_hat = i // (100 / d)
-            k_hat += 1  # base case is k_hat = 1, since always at least one segment
-            if k_hat > 1:
-                new_param = True
-            if (i - self.t) > 0:
-                l_prob += (k_hat - 1) * log(i - self.t)
-            else:
-                l_prob += -2 ** 20  # log is undefined, use small number
-            l_prob += -log(factorial(k_hat - 1)) - k_hat * log(100 / d)
+            # Li et al (2014) Eqn 6
+            # k = 1
+            # l_a1 = k * log(1/2) + (k-1) * log(l) -
+            #        (d * l) / 100 - k * log(100/d) - log(factorial(k - 1))
+            l_a1 = log(1/2) - (d * i) / 100 - log(100/d)
+
+            sum = 0
+            for k in range(2, k_max + 1):
+                # l_ai = k * log(1/2) + (k-1) * log(l) - (d * l) / 100
+                #      - k * log(100/d) - log(factorial(k - 1))
+                diff = (k - 1) * log(i / 100)
+                term = 0
+                for j in range(2, k):
+                    term += log(j)
+                diff -= term
+                sum += exp(diff)
+            y = log1p(sum)
+            l_prob = l_a1 + y
         else:
+            l_prob = (-d * (i - self.t) / 100)
             l_prob += -log(100 / d)
-        return l_prob, new_param
+        return l_prob
 
     def _Sa(self, s, d):
-        result, addl_params = 0, 0
+        result = 0
         for i in s:
-            fa, new_param = self._Fa(i, d)
-            if new_param:
-                addl_params += 1
+            fa = self._Fa(i, d)
             result += fa
-        return result, addl_params
+        return result
 
     def _p(self, d):
         return exp((-d * self.t) / 100)
 
     def _Na(self, n, d):
         if self.first_deg_adj and d == 2:
-            # Equation S1
+            # Huff et al (2011) Eqn S1 & Li et al (2014) Eqn 7
             lambda_ = (3/4) * self.c + 2 * d * self.r * (3/4) * (1/4)
         elif self.avuncular_adj and d == 3:
+            # Li et al (2014) Eqn 9
             lambda_ = (3/4) * self.c + 4 * self.r * ((3/4) * (1/4))
         else:
             lambda_ = (self.a * (self.r * d + self.c) * self._p(d)) / (2 ** (d - 1))
@@ -252,9 +256,9 @@ class Relation(Background):
         result += self._Np(np)
         result += self._Na(na, d)
         result += self._Sp(s[:np])
-        sa, addl_params = self._Sa(s[np:], d)
+        sa = self._Sa(s[np:], d)
         result += sa
-        return result, addl_params
+        return result
 
     def MLL(self, n, s, d):
         """
@@ -279,14 +283,14 @@ class Relation(Background):
         max_np, max_mll : (int, float)
            number of segments attributed to background, log-likelihood
         """
-        max_mll, max_np,max_addl_params = None, None, None
+        max_mll, max_np = None, None
         for np in range(n + 1):
-            mll, addl_params = self._LLr(np, n - np, s, d)
+            mll = self._LLr(np, n - np, s, d)
             if max_mll is None:
-                max_mll, max_np, max_addl_params = mll, np, addl_params
+                max_mll, max_np = mll, np
             elif max_mll < mll:
-                max_mll, max_np, max_addl_params = mll, np, addl_params
-        return max_np, max_mll, max_addl_params
+                max_mll, max_np = mll, np
+        return max_np, max_mll
 
 
 class Estimate:
@@ -370,21 +374,10 @@ def estimate_relation(pair, dob, n, s, h0, ha, max_d, alpha, ci=False):
 
     alts = []
     for d in range(1, max_d + 1):
-        alt_np, alt_MLL, addl_params = ha.MLL(n, s, d)
-        alts.append((d, alt_np, alt_MLL, addl_params))
+        alt_np, alt_MLL = ha.MLL(n, s, d)
+        alts.append((d, alt_np, alt_MLL))
     max_alt = max(alts, key=itemgetter(2))
-    d, np, max_LL, addl_params = max_alt[0], max_alt[1], max_alt[2], max_alt[3]
-    if ha.first_deg_adj and d == 2:
-        alts_less_2 = []
-        for alt in alts:
-            if alt[0] != 2:
-                alts_less_2.append(alt)
-        second_max_alt = max(alts_less_2, key=itemgetter(2))
-        second_max_LL = second_max_alt[2]
-        reject_for_d2 = LL_ratio_test(max_LL, second_max_LL, alpha, df=addl_params)
-        if not reject_for_d2:
-            max_alt = second_max_alt
-            d, np, max_LL, addl_params = max_alt[0], max_alt[1], max_alt[2], max_alt[3]
+    d, np, max_LL = max_alt[0], max_alt[1], max_alt[2]
     reject = LL_ratio_test(max_LL, null_LL, alpha)
     lower_d, upper_d = None, None
     if ci and reject:
