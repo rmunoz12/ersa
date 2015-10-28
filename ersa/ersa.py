@@ -132,8 +132,8 @@ def main():
             db.insert(ests, seg_lists)
     else:
         output_file = open(args.ofile, "w") if args.ofile else stdout
-        print("{:<20} {:<20} {:<25} {:>10} {:>10} {:>10} {:>8} {}"
-              .format("Indv_1", "Indv_2", "Rel_est1", "d_est", "N_seg", "Tot_cM", "NullLL", "LLs"),
+        print("{:<20} {:<20} {:<25} {:>10} {:>10} {:>10} {:>8} {:>8} {}"
+              .format("Indv_1", "Indv_2", "Rel_est1", "d_est", "N_seg", "Tot_cM", "Max-P", "NullLL", "LLs"),
               file=output_file)
         for est, seg_list in gen_estimates(args, h0, ha, pair_dict):
             d_est = est.d if est.reject else "NA"
@@ -142,8 +142,8 @@ def main():
                 rel_est = ("NA", "NA")
             else:
                 rel_est = est.rel_est
-            print("{:<20} {:<20} {:25} {:>10} {:10} {:10,.2f} {:8,.3f}"
-                  .format(est.indv1, est.indv2, rel_est[0], d_est, len(seg_list), s, est.null_LL),
+            print("{:<20} {:<20} {:25} {:>10} {:10} {:10,.2f} {:8,.3f} {:8,.3f}"
+                  .format(est.indv1, est.indv2, rel_est[0], d_est, len(seg_list), s, est.p, est.null_LL),
                   file=output_file, end="  ")
             print_LLs(est.alts)
 

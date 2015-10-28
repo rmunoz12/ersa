@@ -22,9 +22,26 @@ def LL_ratio_test(LLr, LLn, alpha=0.05, df=2):
     df: degrees of freedom for the ratio test
     alpha: confidence level
     """
-    ratio = -2 * LLn + 2 * LLr 
-    p = 1 - chi2.cdf(ratio, df)
+    p = LL_ratio_p(LLr, LLn, df)
     return True if p < alpha else False
+
+
+def LL_ratio_p(LLr, LLn, df=2):
+    """
+    Return p-value for likelihood ratio test of
+    LLr (alternative) and LLn (null)
+
+
+    Parameters
+    ----------
+    LLr: log-likelihood of alternative
+    LLn: log-likelihood of null
+    df: degrees of freedom for the ratio test
+    alpha: confidence level
+    """
+    ratio = -2 * LLn + 2 * LLr
+    p = 1 - chi2.cdf(ratio, df)
+    return p
 
 
 def likelihood_ratio_CI(alts, max_alt_LL, alpha=0.05, df=2):

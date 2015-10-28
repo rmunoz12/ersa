@@ -12,7 +12,7 @@ to estimate relationships.
 
 from math import exp, log, factorial, log1p
 from operator import itemgetter
-from ersa.chisquare import LL_ratio_test, likelihood_ratio_CI
+from ersa.chisquare import LL_ratio_p, likelihood_ratio_CI
 from ersa.mask import total_masked
 import inflect
 
@@ -298,7 +298,7 @@ class Estimate:
     """
     Structure to hold results from estimate_relation
     """
-    def __init__(self, pair, dob, d, reject, null_LL, max_LL, lower_d, upper_d, alts, s, np):
+    def __init__(self, pair, dob, d, reject, null_LL, max_LL, lower_d, upper_d, alts, s, np, p):
         self.indv1, self.indv2 = pair.split(':')
         self.dob = dob
         self.reject = reject
@@ -309,6 +309,7 @@ class Estimate:
         self.lower_d = lower_d
         self.upper_d = upper_d
         self.np = np
+        self.p = p
         if reject:
             years = [dob[0], dob[1]]
             if dob[0] is None or dob[1] is None:
@@ -380,12 +381,13 @@ def estimate_relation(pair, dob, n, s, h0, ha, max_d, alpha, ci=False):
         alts.append((d, alt_np, alt_MLL))
     max_alt = max(alts, key=itemgetter(2))
     d, np, max_LL = max_alt[0], max_alt[1], max_alt[2]
-    reject = LL_ratio_test(max_LL, null_LL, alpha)
+    p = LL_ratio_p(max_LL, null_LL)
+    reject = True if p < alpha else False
     lower_d, upper_d = None, None
     if ci and reject:
         lower_d, upper_d = likelihood_ratio_CI(alts, max_LL, alpha)
 
-    est = Estimate(pair, dob, d, reject, null_LL, max_LL, lower_d, upper_d, alts, s, np)
+    est = Estimate(pair, dob, d, reject, null_LL, max_LL, lower_d, upper_d, alts, s, np, p)
     return est
 
 
