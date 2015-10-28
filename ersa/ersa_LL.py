@@ -205,7 +205,7 @@ class Relation(Background):
 
     def _Fa(self, i, d, k_max=200):
         assert i >= self.t
-        if self.first_deg_adj and d == 2:
+        if self.first_deg_adj and d == 2 and self.a == 2:
             # Li et al (2014) Eqn 6
             # k = 1
             # l_a1 = k * log(1/2) + (k-1) * log(l) -
@@ -225,8 +225,14 @@ class Relation(Background):
             y = log1p(sum)
             l_prob = l_a1 + y
         else:
-            l_prob = (-d * (i - self.t) / 100)
-            l_prob += -log(100 / d)
+            lambda_ = 0
+            if self.a == 2:
+                # Huff et al (2011) Eqn 7 and Li et al (2014) Eqn 1
+                lambda_ = d / 100
+            elif self.a == 0:
+                # Li et al (2014) Eqn 2
+                lambda_ = (self.c + d * self.r) / (100 * self.r)
+            l_prob = log(lambda_) - lambda_ * (i - self.t)
         return l_prob
 
     def _Sa(self, s, d):

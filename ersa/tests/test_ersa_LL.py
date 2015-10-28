@@ -64,7 +64,8 @@ class TestRelation():
         assert fa == -(5 - self.R.t)
 
         fa = self.R._Fa(6, 1)
-        assert fa == -(6 - self.R.t) / 100 - log(100)
+        expect = -(6 - self.R.t) / 100 - log(100)
+        assert abs(fa - expect) < 1e-12
 
         fa = self.R._Fa(10, 2)
         assert fa == -2 * (10 - self.R.t) / 100 - log(100 / 2)
