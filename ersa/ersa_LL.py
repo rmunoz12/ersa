@@ -230,8 +230,9 @@ class Relation(Background):
                 # Huff et al (2011) Eqn 7 and Li et al (2014) Eqn 1
                 lambda_ = d / 100
             elif self.a == 0:
-                # Li et al (2014) Eqn 2
-                lambda_ = (self.c + d * self.r) / (100 * self.r)
+                # Li et al (2014) Eqn 2, 4
+                assert d > 1  # TODO no d=1 when a=0
+                lambda_ = (self.c + (d - 1) * self.r) / (100 * self.r)
             l_prob = log(lambda_) - lambda_ * (i - self.t)
         return l_prob
 
@@ -246,14 +247,19 @@ class Relation(Background):
         return exp((-d * self.t) / 100)
 
     def _Na(self, n, d):
-        if self.first_deg_adj and d == 2:
-            # Huff et al (2011) Eqn S1 & Li et al (2014) Eqn 7
-            lambda_ = (3/4) * self.c + 2 * d * self.r * (3/4) * (1/4)
-        elif self.avuncular_adj and d == 3:
-            # Li et al (2014) Eqn 9
-            lambda_ = (3/4) * self.c + 4 * self.r * ((3/4) * (1/4))
-        else:
-            lambda_ = (self.a * (self.r * d + self.c) * self._p(d)) / (2 ** (d - 1))
+        lambda_ = 0
+        if self.a == 2:
+            if self.first_deg_adj and d == 2:
+                # Huff et al (2011) Eqn S1 & Li et al (2014) Eqn 7
+                lambda_ = (3/4) * self.c + 2 * d * self.r * (3/4) * (1/4)
+            elif self.avuncular_adj and d == 3:
+                # Li et al (2014) Eqn 9
+                lambda_ = (3/4) * self.c + 4 * self.r * ((3/4) * (1/4))
+            else:
+                lambda_ = (self.a * (self.r * d + self.c) * self._p(d)) / (2 ** (d - 1))
+        elif self.a == 0:
+            # Li et al (2014) Eqn 5
+            lambda_ = (self.a * (self.r * (d - 1) + self.c) * self._p(d)) / (2 ** (d - 1))
         l_prob = n * log(lambda_) - lambda_ - log(factorial(n))
         return l_prob
 
