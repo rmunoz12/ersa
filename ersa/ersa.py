@@ -80,6 +80,15 @@ def gen_estimates(args, h0, ha, pair_dict):
         yield est, seg_list
 
 
+def print_LLs(alts):
+    print("{", end='')
+    for i in range(len(alts)):
+        alt = alts[i]
+        print("\"{}\": {:>8,.3f}".format(str(alt[0] - 1), round(alt[2], 3)), end='')
+        if i < len(alts) - 1:
+            print(",", end=' ')
+    print("}")
+
 def main():
     args = get_args()
 
@@ -123,8 +132,8 @@ def main():
             db.insert(ests, seg_lists)
     else:
         output_file = open(args.ofile, "w") if args.ofile else stdout
-        print("{:<20} {:<20} {:<10} {:<10} {:>10} {:>10} {:>10}"
-              .format("Indv_1", "Indv_2", "Rel_est1", "Rel_est2", "d_est", "N_seg", "Tot_cM"),
+        print("{:<20} {:<20} {:<25} {:>10} {:>10} {:>10} {:>8} {}"
+              .format("Indv_1", "Indv_2", "Rel_est1", "d_est", "N_seg", "Tot_cM", "NullLL", "LLs"),
               file=output_file)
         for est, seg_list in gen_estimates(args, h0, ha, pair_dict):
             d_est = est.d if est.reject else "NA"
@@ -133,8 +142,9 @@ def main():
                 rel_est = ("NA", "NA")
             else:
                 rel_est = est.rel_est
-            print("{:<20} {:<20} {:10} {:10} {:>10} {:10} {:10,.2f}"
-                  .format(est.indv1, est.indv2, rel_est[0], rel_est[1], d_est, len(seg_list), s),
-                  file=output_file)
+            print("{:<20} {:<20} {:25} {:>10} {:10} {:10,.2f} {:8,.3f}"
+                  .format(est.indv1, est.indv2, rel_est[0], d_est, len(seg_list), s, est.null_LL),
+                  file=output_file, end="  ")
+            print_LLs(est.alts)
 
     print("--- {} seconds ---".format(round(time() - start_time, 3)))
