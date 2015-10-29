@@ -10,7 +10,6 @@
 from .ersa_LL import Background, Relation, estimate_relation
 from .parser import get_pair_dict
 from time import time
-from sys import stdout
 from argparse import ArgumentParser
 from .dbmanager import DbManager
 
@@ -51,7 +50,7 @@ def get_args():
 
     group = p.add_mutually_exclusive_group()
     group.add_argument("-D", help="direct output to database D")
-    group.add_argument("-o", "--ofile", help="direct output to OFILE")
+    group.add_argument("-o", "--ofile", help="direct output to a JSON file, OFILE")
 
     group2 = p.add_mutually_exclusive_group()
     group2.add_argument("--insig-threshold", help="Threshold (cM) minimum to keep insignificant results (default: off)",
@@ -130,11 +129,13 @@ def main():
               "({} pairs, {} segments)".format(args.matchfile, len(ests), total_segs))
         with DbManager(args.D, skip_soft_delete=args.skip_soft_delete) as db:
             db.insert(ests, seg_lists)
+    elif args.ofile:
+        # TODO call json_manager
+        # output_file = open(args.ofile, "w")
+        pass
     else:
-        output_file = open(args.ofile, "w") if args.ofile else stdout
         print("{:<20} {:<20} {:<25} {:>10} {:>10} {:>10} {:>8} {:>8} {}"
-              .format("Indv_1", "Indv_2", "Rel_est1", "d_est", "N_seg", "Tot_cM", "Max-P", "NullLL", "LLs"),
-              file=output_file)
+              .format("Indv_1", "Indv_2", "Rel_est1", "d_est", "N_seg", "Tot_cM", "Max-P", "NullLL", "LLs"))
         for est, seg_list in gen_estimates(args, h0, ha, pair_dict):
             d_est = est.d if est.reject else "NA"
             s = est.cm
@@ -144,7 +145,7 @@ def main():
                 rel_est = est.rel_est
             print("{:<20} {:<20} {:25} {:>10} {:10} {:10,.2f} {:8,.3f} {:8,.3f}"
                   .format(est.indv1, est.indv2, rel_est[0], d_est, len(seg_list), s, est.p, est.null_LL),
-                  file=output_file, end="  ")
+                  end="  ")
             print_LLs(est.alts)
 
     print("--- {} seconds ---".format(round(time() - start_time, 3)))
