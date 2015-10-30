@@ -13,6 +13,7 @@ from time import time
 from sys import stdout
 from argparse import ArgumentParser
 from .dbmanager import DbManager
+from tqdm import tqdm
 
 
 def get_args():
@@ -44,14 +45,18 @@ def get_args():
                    type=str)
     p.add_argument("-th", "--theta", help="mean shared segment length (in cM) in the population (default %(default).3f)",
                    type=float, default=3.197036753)
-    p.add_argument("--keep-insignificant", help="push insignificant results to the database where d_est is NULL (default: discard them)",
-                   action='store_true')
     p.add_argument("--skip-soft-delete", help="Assume the database is empty, don't soft-delete before inserting new data",
                    action='store_true', default=False)
 
     group = p.add_mutually_exclusive_group()
     group.add_argument("-D", help="direct output to database D")
     group.add_argument("-o", "--ofile", help="direct output to OFILE")
+
+    group2 = p.add_mutually_exclusive_group()
+    group2.add_argument("--insig-threshold", help="Threshold (cM) minimum to keep insignificant results (default %(default).1f)",
+                        type=float, default=20.0)
+    group2.add_argument("--keep-insignificant", help="push insignificant results to the database where d_est is NULL (default: discard below INSIG-THRESHOLD)",
+                        action='store_true')
 
     args = p.parse_args()
     return args
@@ -94,9 +99,9 @@ def main():
         n_pairs = len(pair_dict)
         print("processing {:,} pairs..".format(n_pairs))
         ests, seg_lists = [], []
-        for est, seg_list in gen_estimates(args, h0, ha, pair_dict):
+        for est, seg_list in tqdm(gen_estimates(args, h0, ha, pair_dict), total=n_pairs, leave=True):
             # 'reject' => H0 is rejected, this pair is significant.
-            if est.reject or args.keep_insignificant:
+            if est.reject or args.keep_insignificant or est.cm >= args.insig_threshold:
                 ests.append(est)
                 seg_lists.append(seg_list)
         print("pushing results from '{}' to database... " \
@@ -110,7 +115,7 @@ def main():
               file=output_file)
         for est, seg_list in gen_estimates(args, h0, ha, pair_dict):
             d_est = est.d if est.reject else "NA"
-            s = sum([seg.length for seg in seg_list])
+            s = est.cm
             if est.rel_est is None:
                 rel_est = ("NA", "NA")
             else:
