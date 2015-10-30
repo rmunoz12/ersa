@@ -209,6 +209,7 @@ class Relation(Background):
 
             sum = 0
             for k in range(2, k_max + 1):
+                # Todo speed improvement
                 # l_ai = k * log(1/2) + (k-1) * log(l) - (d * l) / 100
                 #      - k * log(100/d) - log(factorial(k - 1))
                 diff = (k - 1) * log(i / 100)
@@ -325,6 +326,7 @@ class Estimate:
         # still be d = 1 since the algorithm
         # does not test for MZ twins.
         self.d = d - 1
+        self.cm = sum(s)
 
 
 def estimate_relation(pair, dob, n, s, h0, ha, max_d, alpha, ci=False):
