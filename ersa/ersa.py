@@ -35,6 +35,8 @@ def get_args():
                    action='store_true')
     p.add_argument("-l", help="mean number of segments shared in the population (default: %(default).1f)",
                    type=float, default=13.73)
+    p.add_argument("--merge-segs", help="merge segments that are on the same chromosome and <= MERGE-SEGS bp apart (default No merge)",
+                   type=int, default=-1)
     p.add_argument("--nomask", help="disable genomic region masking",
                    action="store_true")
     p.add_argument("-r", help="expected number of recombination events per haploid genome per generation (default %(default).1f for humans)",
@@ -84,7 +86,7 @@ def main():
 
     print("--- Reading match file ---")
 
-    pair_dict = get_pair_dict(args.matchfile, args.t, args.user, args.H, args.nomask)
+    pair_dict = get_pair_dict(args.matchfile, args.t, args.user, args.H, args.nomask, args.merge_segs)
 
     h0 = Background(args.t, args.theta, args.l)
     ha = Relation(args.c, args.r, args.t, args.theta, args.l,
