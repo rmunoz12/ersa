@@ -99,13 +99,15 @@ def main():
         n_pairs = len(pair_dict)
         print("processing {:,} pairs..".format(n_pairs))
         ests, seg_lists = [], []
+        total_segs = 0
         for est, seg_list in tqdm(gen_estimates(args, h0, ha, pair_dict), total=n_pairs, leave=True):
             # 'reject' => H0 is rejected, this pair is significant.
             if est.reject or args.keep_insignificant or est.cm >= args.insig_threshold:
                 ests.append(est)
                 seg_lists.append(seg_list)
+                total_segs += len(seg_list)
         print("pushing results from '{}' to database... " \
-              "({} pairs, {} segments)".format(args.matchfile, len(ests), len(seg_lists)))
+              "({} pairs, {} segments)".format(args.matchfile, len(ests), total_segs))
         with DbManager(args.D, skip_soft_delete=args.skip_soft_delete) as db:
             db.insert(ests, seg_lists)
     else:
