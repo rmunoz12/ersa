@@ -33,7 +33,7 @@ setup(name=NAME,
       entry_points = {
           "console_scripts": ['ersa = ersa.ersa:main']
       },
-      install_requires=['sqlalchemy', 'inflect', 'pytest', 'scipy'],
+      install_requires=['sqlalchemy', 'inflect', 'pytest', 'scipy', 'tqdm'],
       classifiers=['Development Status :: 4 - Beta',
                    'Intended Audience :: Science/Research',
                    'Programming Language :: Python :: 3.4',
