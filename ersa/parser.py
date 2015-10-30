@@ -84,6 +84,11 @@ def merge_segments(segs, merge_len):
     merge_len
         maximum base pair between segments on
         the same chromosome that should be merged
+
+    Returns
+    -------
+    new_segs : list[SharedSegment]
+        modified segs with close segments merged
     """
     assert merge_len < maxsize
     s_by_chrom = {}
