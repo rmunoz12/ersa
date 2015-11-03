@@ -55,8 +55,8 @@ def get_args():
     group.add_argument("-o", "--ofile", help="direct output to OFILE")
 
     group2 = p.add_mutually_exclusive_group()
-    group2.add_argument("--insig-threshold", help="Threshold (cM) minimum to keep insignificant results (default %(default).1f)",
-                        type=float, default=20.0)
+    group2.add_argument("--insig-threshold", help="Threshold (cM) minimum to keep insignificant results (default: off)",
+                        type=float, default=None)
     group2.add_argument("--keep-insignificant", help="push insignificant results to the database where d_est is NULL (default: discard below INSIG-THRESHOLD)",
                         action='store_true')
 
@@ -104,7 +104,8 @@ def main():
         total_segs = 0
         for est, seg_list in tqdm(gen_estimates(args, h0, ha, pair_dict), total=n_pairs, leave=True):
             # 'reject' => H0 is rejected, this pair is significant.
-            if est.reject or args.keep_insignificant or est.cm >= args.insig_threshold:
+            if est.reject or args.keep_insignificant or \
+                    (args.insig_threshold and est.cm >= args.insig_threshold):
                 ests.append(est)
                 seg_lists.append(seg_list)
                 total_segs += len(seg_list)
