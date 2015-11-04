@@ -12,6 +12,9 @@ from .parser import get_pair_dict
 from time import time
 from argparse import ArgumentParser
 from .dbmanager import DbManager
+from tqdm import tqdm
+from datetime import datetime
+import json
 
 
 def get_args():
@@ -50,7 +53,8 @@ def get_args():
 
     group = p.add_mutually_exclusive_group()
     group.add_argument("-D", help="direct output to database D")
-    group.add_argument("-o", "--ofile", help="direct output to a JSON file, OFILE")
+    group.add_argument("-o", "--ofile", help="direct output to a JSON file, OFILE",
+                       type=str, default=None)
 
     group2 = p.add_mutually_exclusive_group()
     group2.add_argument("--insig-threshold", help="Threshold (cM) minimum to keep insignificant results (default: off)",
@@ -106,7 +110,7 @@ def main():
 
     print("--- Solving ---")
 
-    if args.D:
+    if args.D or args.ofile:
         n_pairs = len(pair_dict)
         print("processing {:,} pairs..".format(n_pairs))
         ests, seg_lists = [], []
@@ -125,14 +129,41 @@ def main():
                 ests.append(est)
                 seg_lists.append(seg_list)
                 total_segs += len(seg_list)
-        print("pushing results from '{}' to database... " \
+        print("pushing results from '{}'... " \
               "({} pairs, {} segments)".format(args.matchfile, len(ests), total_segs))
-        with DbManager(args.D, skip_soft_delete=args.skip_soft_delete) as db:
-            db.insert(ests, seg_lists)
-    elif args.ofile:
-        # TODO call json_manager
-        # output_file = open(args.ofile, "w")
-        pass
+        if args.D:
+            with DbManager(args.D, skip_soft_delete=args.skip_soft_delete) as db:
+                db.insert(ests, seg_lists)
+        else:
+            lines = []
+            for i in range(len(ests)):
+                est, seg_list = ests[i], seg_lists[i]
+
+                pair = est.indv1 + ":" + est.indv2
+                d_est = est.d if est.reject else None
+                np = est.np if est.reject else len(est.s)
+                rel_est1 = est.rel_est[0] if est.rel_est else None
+                rel_est2 = est.rel_est[1] if est.rel_est else None
+                LLs = {}
+                for i in range(len(est.alts)):
+                    alt = est.alts[i]
+                    LLs[alt[0] - 1] = str(round(alt[2], 3))
+                total_bp = 0
+                for seg in seg_list:
+                    total_bp += seg.bpEnd - seg.bpStart + 1
+
+                line = {"pair": pair, "indv1": est.indv1, "indv2": est.indv2,
+                        "d_est": d_est, "rel_est1": rel_est1, "rel_est2": rel_est2,
+                        "n": len(est.s), "total_cM": est.cm, "total_bp": total_bp,
+                        "LLs": LLs, "na": (len(est.s) - np),
+                        "created_date": str(datetime.utcnow()),
+                        "segments": [{'chromosome': seg.chrom, 'length': seg.length,
+                                      'bp_start': seg.bpStart, 'bp_end': seg.bpEnd}
+                                     for seg in seg_list]}
+                lines.append(line)
+
+            with open(args.ofile, 'w') as out:
+                json.dump(lines, out)
     else:
         print("{:<20} {:<20} {:<25} {:>10} {:>10} {:>10} {:>8} {:>8} {}"
               .format("Indv_1", "Indv_2", "Rel_est1", "d_est", "N_seg", "Tot_cM", "Max-P", "NullLL", "LLs"))
