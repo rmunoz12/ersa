@@ -15,6 +15,7 @@ from .dbmanager import DbManager
 from tqdm import tqdm
 from datetime import datetime
 import json
+from .json_manager import StreamJSON
 
 
 def get_args():
@@ -70,10 +71,13 @@ def get_args():
 
 def gen_estimates(args, h0, ha, pair_dict):
     """
-    Returns
-    -------
-    (est, seg_list) : (Estimate, list[ersa.parser.SharedSegment])
-        Tuple of estimate results and corresponding segment list.
+    :param args:
+    :param h0: Background
+    :param ha: Relation
+    :param pair_dict:
+
+    :rtype: (Estimate, SharedSegment)
+    :return: Tuple of estimate results and corresponding segment list.
     """
     for pair, seg_list in pair_dict.items():
         dob = (None, None)  # TODO get dob from file
@@ -81,6 +85,32 @@ def gen_estimates(args, h0, ha, pair_dict):
         n = len(s)
         est = estimate_relation(pair, dob, n, s, h0, ha, args.dmax, args.alpha, args.ci)
         yield est, seg_list
+
+
+def process_estimates(args, h0, ha, pair_dict):
+    for est, seg_list in gen_estimates(args, h0, ha, pair_dict):
+        pair = est.indv1 + ":" + est.indv2
+        d_est = est.d if est.reject else None
+        np = est.np if est.reject else len(est.s)
+        rel_est1 = est.rel_est[0] if est.rel_est else None
+        rel_est2 = est.rel_est[1] if est.rel_est else None
+        LLs = {}
+        for i in range(len(est.alts)):
+            alt = est.alts[i]
+            LLs[alt[0] - 1] = str(round(alt[2], 3))
+        total_bp = 0
+        for seg in seg_list:
+            total_bp += seg.bpEnd - seg.bpStart + 1
+
+        line = {"pair": pair, "indv1": est.indv1, "indv2": est.indv2,
+                "d_est": d_est, "rel_est1": rel_est1, "rel_est2": rel_est2,
+                "n": len(est.s), "total_cM": est.cm, "total_bp": total_bp,
+                "LLs": LLs, "na": (len(est.s) - np),
+                "created_date": str(datetime.utcnow()),
+                "segments": [{'chromosome': seg.chrom, 'length': seg.length,
+                              'bp_start': seg.bpStart, 'bp_end': seg.bpEnd}
+                             for seg in seg_list]}
+        yield line
 
 
 def print_LLs(alts):
@@ -91,6 +121,7 @@ def print_LLs(alts):
         if i < len(alts) - 1:
             print(",", end=' ')
     print("}")
+
 
 def main():
     args = get_args()
@@ -110,7 +141,7 @@ def main():
 
     print("--- Solving ---")
 
-    if args.D or args.ofile:
+    if args.D:
         n_pairs = len(pair_dict)
         print("processing {:,} pairs..".format(n_pairs))
         ests, seg_lists = [], []
@@ -131,39 +162,13 @@ def main():
                 total_segs += len(seg_list)
         print("pushing results from '{}'... " \
               "({} pairs, {} segments)".format(args.matchfile, len(ests), total_segs))
-        if args.D:
-            with DbManager(args.D, skip_soft_delete=args.skip_soft_delete) as db:
-                db.insert(ests, seg_lists)
-        else:
-            lines = []
-            for i in range(len(ests)):
-                est, seg_list = ests[i], seg_lists[i]
-
-                pair = est.indv1 + ":" + est.indv2
-                d_est = est.d if est.reject else None
-                np = est.np if est.reject else len(est.s)
-                rel_est1 = est.rel_est[0] if est.rel_est else None
-                rel_est2 = est.rel_est[1] if est.rel_est else None
-                LLs = {}
-                for i in range(len(est.alts)):
-                    alt = est.alts[i]
-                    LLs[alt[0] - 1] = str(round(alt[2], 3))
-                total_bp = 0
-                for seg in seg_list:
-                    total_bp += seg.bpEnd - seg.bpStart + 1
-
-                line = {"pair": pair, "indv1": est.indv1, "indv2": est.indv2,
-                        "d_est": d_est, "rel_est1": rel_est1, "rel_est2": rel_est2,
-                        "n": len(est.s), "total_cM": est.cm, "total_bp": total_bp,
-                        "LLs": LLs, "na": (len(est.s) - np),
-                        "created_date": str(datetime.utcnow()),
-                        "segments": [{'chromosome': seg.chrom, 'length': seg.length,
-                                      'bp_start': seg.bpStart, 'bp_end': seg.bpEnd}
-                                     for seg in seg_list]}
-                lines.append(line)
-
-            with open(args.ofile, 'w') as out:
-                json.dump(lines, out)
+        with DbManager(args.D, skip_soft_delete=args.skip_soft_delete) as db:
+            db.insert(ests, seg_lists)
+    elif args.ofile:
+        est_stream = StreamJSON(process_estimates,
+                                args=args, h0=h0, ha=ha, pair_dict=pair_dict)
+        with open(args.ofile, 'w') as out:
+            json.dump(est_stream, out)
     else:
         print("{:<20} {:<20} {:<25} {:>10} {:>10} {:>10} {:>8} {:>8} {}"
               .format("Indv_1", "Indv_2", "Rel_est1", "d_est", "N_seg", "Tot_cM", "Max-P", "NullLL", "LLs"))

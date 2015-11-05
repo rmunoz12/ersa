@@ -9,6 +9,20 @@ JSON Output Handling
 #   All rights reserved
 #   GPL license
 
-import json
 
+class StreamJSON(list):
+    def __init__(self, gen, **kwargs):
+        super().__init__()
+        self.gen = self._increase_order(gen, **kwargs)
 
+    def __iter__(self):
+        return self.gen()
+
+    def __len__(self):
+        return 1
+
+    @staticmethod
+    def _increase_order(f, **kwargs):
+        def helper():
+            return f(**kwargs)
+        return helper
