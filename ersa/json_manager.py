@@ -11,9 +11,23 @@ JSON Output Handling
 
 
 class StreamJSON(list):
-    def __init__(self, gen, **kwargs):
+    """
+    f
+        function that yields a generator and takes kwwargs
+
+
+    Notes
+    -----
+    Converts f into an iterable higher order function
+
+
+    References
+    ----------
+    http://stackoverflow.com/questions/21663800/python-make-a-list-generator-json-serializable
+    """
+    def __init__(self, f, **kwargs):
         super().__init__()
-        self.gen = self._increase_order(gen, **kwargs)
+        self.gen = self._increase_order(f, **kwargs)
 
     def __iter__(self):
         return self.gen()
