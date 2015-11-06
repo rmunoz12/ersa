@@ -59,31 +59,33 @@ class TestRelation():
         with pytest.raises(AssertionError):
             d = 5
             self.R._Fa(self.t - 1, d)
-        fa, new_param = self.R._Fa(5, 100)
+        fa = self.R._Fa(5, 100)
         assert fa == -(5 - self.R.t)
 
-        fa, new_param = self.R._Fa(6, 1)
+        fa = self.R._Fa(6, 1)
         assert fa == -(6 - self.R.t) / 100 - log(100)
 
-        fa, new_param = self.R._Fa(10, 2)
+        fa = self.R._Fa(10, 2)
         assert fa == -2 * (10 - self.R.t) / 100 - log(100 / 2)
 
         self.R.first_deg_adj = True
-        fa, new_param = self.R._Fa(99, 2)
-        assert fa == log(99 - self.R.t) - log(factorial(1)) - 2 * (99 - self.R.t) / 100 - 2 *log(100 / 2)
+        fa = self.R._Fa(99, 2)
+        # expect = log(99 - self.R.t) - log(factorial(1)) -
+        #          2 * (99 - self.R.t) / 100 - 2 *log(100 / 2)
+        expect = -5.595170185988091
+        assert fa == expect
         self.R.first_deg_adj = False
 
     def test_Sa(self):
         d = 4
-        sa, addl_params = self.R._Sa([5], d)
-        fa, new_param = self.R._Fa(5, d)
+        sa = self.R._Sa([5], d)
+        fa = self.R._Fa(5, d)
         assert sa == fa
 
-        sa, addl_params = self.R._Sa([5, 10], d)
-        fa1, new_param1 = self.R._Fa(5, d)
-        fa2, new_param2 = self.R._Fa(10, d)
+        sa = self.R._Sa([5, 10], d)
+        fa1 = self.R._Fa(5, d)
+        fa2 = self.R._Fa(10, d)
         fa = fa1 + fa2
-        new_param = new_param1 + new_param2
         assert sa == fa
 
     def test_p(self):
@@ -106,23 +108,39 @@ class TestRelation():
         d = 3
         for np in range(n + 1):
             na = n - np
-            mlr_obs, addl_params = self.R._LLr(np, na, s, d)
+            mlr_obs = self.R._LLr(np, na, s, d)
             mlr_exp = self.R._Np(np) + self.R._Na(na, d) + self.R._Sp(s[:np])
-            sa, addl_params = self.R._Sa(s[np:], d)
+            sa = self.R._Sa(s[np:], d)
             mlr_exp += sa
             assert mlr_obs == mlr_exp
 
     def test_MLL(self):
         self.R.first_deg_adj = True
-        max_np, max_mll, addl_params = self.R.MLL(1, [4], 2)
+        max_np, max_mll = self.R.MLL(1, [4], 2)
         assert max_np == 1
-        assert addl_params == 0
         assert max_mll == -7.27685644868579
         self.R.first_deg_adj = False
 
-        max_np, max_mll, addl_params = self.R.MLL(5, [10, 5, 3], 8)
+        max_np, max_mll = self.R.MLL(5, [10, 5, 3], 8)
         assert max_np == 5
         assert max_mll == -8.35813328956702
+
+
+class TestRelationAvuncular():
+    c = 1
+    r = 2
+    t = 3
+    theta = 4
+    lambda_ = 5
+    R = Relation(c, r, t, theta, lambda_, nomask=True, avuncular_adj=True)
+
+    def test_Na(self):
+        d = 3
+        for n in range(5):
+            lambda_ = (3/4) * (self.r + self.c)
+            Na_obs = self.R._Na(n, d)
+            Na_exp = log(poisson.pmf(n, lambda_))
+            assert Na_obs == Na_exp
 
 
 def test_estimate_relation():
