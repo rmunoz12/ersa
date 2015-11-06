@@ -13,7 +13,6 @@ from time import time
 from sys import stdout
 from argparse import ArgumentParser
 from .dbmanager import DbManager
-from tqdm import tqdm
 
 
 def get_args():
@@ -102,7 +101,7 @@ def main():
         print("processing {:,} pairs..".format(n_pairs))
         ests, seg_lists = [], []
         total_segs = 0
-        for est, seg_list in tqdm(gen_estimates(args, h0, ha, pair_dict), total=n_pairs, leave=True):
+        for est, seg_list in gen_estimates(args, h0, ha, pair_dict):
             # 'reject' => H0 is rejected, this pair is significant.
             if est.reject or args.keep_insignificant or \
                     (args.insig_threshold and est.cm >= args.insig_threshold):
