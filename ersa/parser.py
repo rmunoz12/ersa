@@ -128,8 +128,6 @@ def merge_segments(segs, merge_len):
     return new_segs
 
 
-
-
 def get_pair_dict(path, t, user=None, haploscores=False, nomask=False, merge_len=-1):
     """
     Reads from path and collapses the input data into a dictionary
@@ -184,6 +182,7 @@ def get_pair_dict(path, t, user=None, haploscores=False, nomask=False, merge_len
         else:
             pair_dict[pair_id] = [seg]
 
+    remove = []
     for pair, segs in pair_dict.items():
         if merge_len > 0:
             segs = merge_segments(segs, merge_len)
@@ -192,5 +191,10 @@ def get_pair_dict(path, t, user=None, haploscores=False, nomask=False, merge_len
             segs = mask_input_segs(segs, t)
             pair_dict[pair] = segs
         segs.sort()
+        if len(segs) == 0:
+            remove.append(pair)
+
+    for pair in remove:
+        del pair_dict[pair]
 
     return pair_dict

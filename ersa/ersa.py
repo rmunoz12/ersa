@@ -56,6 +56,8 @@ def get_args():
     group2 = p.add_mutually_exclusive_group()
     group2.add_argument("--insig-threshold", help="Threshold (cM) minimum to keep insignificant results (default: off)",
                         type=float, default=None)
+    group2.add_argument("--keep-insig-by-seg", help="Keep insignificant results that have at least <first value> segments shared of the specified size <second value> (default: off)",
+                        type=float, default=None, nargs=2)
     group2.add_argument("--keep-insignificant", help="push insignificant results to the database where d_est is NULL (default: discard below INSIG-THRESHOLD)",
                         action='store_true')
 
@@ -102,9 +104,16 @@ def main():
         ests, seg_lists = [], []
         total_segs = 0
         for est, seg_list in gen_estimates(args, h0, ha, pair_dict):
+            keep = False
+            if args.keep_insig_by_seg:
+                n_needed = args.keep_insig_by_seg[0]
+                l_needed = args.keep_insig_by_seg[1]
+                count = sum(i.length > l_needed for i in seg_list)
+                keep = True if count > n_needed else False
             # 'reject' => H0 is rejected, this pair is significant.
             if est.reject or args.keep_insignificant or \
-                    (args.insig_threshold and est.cm >= args.insig_threshold):
+                    (args.insig_threshold and est.cm >= args.insig_threshold) or \
+                    (args.keep_insig_by_seg and keep):
                 ests.append(est)
                 seg_lists.append(seg_list)
                 total_segs += len(seg_list)
