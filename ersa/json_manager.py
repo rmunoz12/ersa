@@ -12,14 +12,15 @@ JSON Output Handling
 
 class StreamJSON(list):
     """
+    Class StreamJSON
+    ----------------
+    Acts as an iterable over a function f, specifically to
+    stream a list of JSON objects to json.dump() or json.dumps().
+
     Parameters
     ----------
-    f
-        function that yields a generator and takes kwwargs
-
-    Notes
-    -----
-    Converts f into an iterable higher order function
+    f : (**kwargs) -> generator[T]
+        function that yields T
 
     References
     ----------

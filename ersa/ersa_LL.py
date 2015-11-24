@@ -299,6 +299,7 @@ class Estimate:
     Structure to hold results from estimate_relation
     """
     def __init__(self, pair, dob, d, reject, null_LL, max_LL, lower_d, upper_d, alts, s, np, p):
+        self.pair = pair
         self.indv1, self.indv2 = pair.split(':')
         self.dob = dob
         self.reject = reject
@@ -317,9 +318,10 @@ class Estimate:
                     years[0], years[1] = 0, 0
                 else:
                     years[0], years[1] = 0, 31
-            self.rel_est = potential_relationship(d, self.indv1, self.indv2, years[0], years[1])
+            self.rel_est1, self.rel_est2 = \
+                potential_relationship(d, self.indv1, self.indv2, years[0], years[1])
         else:
-            self.rel_est = None
+            self.rel_est1, self.rel_est2 = None, None
         # "collapse" d from number of meiosis to
         # relationship degree. Note that for d > 1
         # this is just a shift, but for d = 1
@@ -328,6 +330,10 @@ class Estimate:
         # does not test for MZ twins.
         self.d = d - 1
         self.cm = sum(s)
+        self.LLs = {}
+        for i in range(len(self.alts)):
+            alt = self.alts[i]
+            self.LLs[alt[0] - 1] = alt[2]
 
 
 def estimate_relation(pair, dob, n, s, h0, ha, max_d, alpha, ci=False):

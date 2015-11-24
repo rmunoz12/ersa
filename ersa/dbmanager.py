@@ -16,7 +16,7 @@ from .dbmodels.ersa_result import Result
 from .dbmodels.ersa_segment import Segment
 from .ersa_LL import Estimate
 from .parser import SharedSegment
-
+import json
 
 class Database:
     """
@@ -105,42 +105,28 @@ class Database:
 
         seg_lists : list[list[SharedSegment]]
         """
-        # assert isinstance(ests[0], Estimate)
-        # assert isinstance(seg_lists[0][0], SharedSegment)
 
         pairs = []
         for est in ests:
-            p = est.indv1 + ":" + est.indv2
-            pairs.append(p)
+            pairs.append(est.pair)
 
         if not self.skip_soft_delete:
             self.soft_delete(pairs)
 
         for i in range(len(ests)):
             est, seg_list = ests[i], seg_lists[i]
-
             d_est = est.d if est.reject else None
-            np = est.np if est.reject else len(est.s)
-            rel_est1 = est.rel_est[0] if est.rel_est else None
-            rel_est2 = est.rel_est[1] if est.rel_est else None
-            LLs = "{"
-            for i in range(len(est.alts)):
-                alt = est.alts[i]
-                LLs += "\"" + str(alt[0] - 1) + "\"" + ":" + str(round(alt[2], 3))
-                if i == len(est.alts) - 1:
-                    LLs += "}"
-                else:
-                    LLs += ","
+            LLs = json.dumps(est.LLs)
             total_bp = 0
             for seg in seg_list:
                 total_bp += seg.bpEnd - seg.bpStart + 1
 
             insert_result = Result.__table__.insert()
             inserted_result = self.conn.execute(insert_result, indv1=est.indv1, indv2=est.indv2,
-                                                d_est=d_est, rel_est1=rel_est1, rel_est2=rel_est2,
+                                                d_est=d_est, rel_est1=est.rel_est1, rel_est2=est.rel_est2,
                                                 n=len(est.s), total_cM=est.cm,
                                                 total_bp=total_bp, LLs=LLs,
-                                                na=(len(est.s) - np))
+                                                na=(len(est.s) - est.np))
             result_id = inserted_result.inserted_primary_key[0]
 
             if len(seg_list) > 0:
