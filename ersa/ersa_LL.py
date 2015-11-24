@@ -365,8 +365,9 @@ def estimate_relation(pair, dob, n, s, h0, ha, max_d, alpha, ci=False):
 
     Returns
     -------
-    lengths : dictionary
-
+    est : Estimate
+        Contains parameters related to the overall maximum likelihood
+        model, and the log-likelihoods of maximum models for each d.
     """
     assert isinstance(h0, Background)
     assert isinstance(ha, Relation)
@@ -441,7 +442,7 @@ def _n_to_w(n, capitalize=True):
 
     Returns
     -------
-        s : str
+    s : str
     """
     inflect_eng = inflect.engine()
     s = inflect_eng.number_to_words(n)

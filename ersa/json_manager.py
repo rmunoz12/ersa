@@ -12,14 +12,14 @@ JSON Output Handling
 
 class StreamJSON(list):
     """
+    Parameters
+    ----------
     f
         function that yields a generator and takes kwwargs
-
 
     Notes
     -----
     Converts f into an iterable higher order function
-
 
     References
     ----------

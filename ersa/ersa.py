@@ -41,6 +41,8 @@ def get_args():
                    type=int, default=-1)
     p.add_argument("--nomask", help="disable genomic region masking",
                    action="store_true")
+    p.add_argument("--progress", help="show progress bar during relation estimation",
+                   action="store_true")
     p.add_argument("-r", help="expected number of recombination events per haploid genome per generation (default %(default).1f for humans)",
                    type=float, default=35.2548101)
     p.add_argument("-t", help="min segment length (in cM) to include in comparisons (default %(default).1f)",
@@ -71,13 +73,10 @@ def get_args():
 
 def gen_estimates(args, h0, ha, pair_dict):
     """
-    :param args:
-    :param h0: Background
-    :param ha: Relation
-    :param pair_dict:
-
-    :rtype: (Estimate, SharedSegment)
-    :return: Tuple of estimate results and corresponding segment list.
+    Returns
+    -------
+    (est, seg_list) : (Estimate, list[ersa.parser.SharedSegment])
+        Tuple of estimate results and corresponding segment list.
     """
     for pair, seg_list in pair_dict.items():
         dob = (None, None)  # TODO get dob from file
@@ -88,7 +87,10 @@ def gen_estimates(args, h0, ha, pair_dict):
 
 
 def process_estimates(args, h0, ha, pair_dict):
-    for est, seg_list in gen_estimates(args, h0, ha, pair_dict):
+    gen = gen_estimates(args, h0, ha, pair_dict)
+    if args.progress:
+        gen = tqdm(gen, total=len(pair_dict))
+    for est, seg_list in gen:
         pair = est.indv1 + ":" + est.indv2
         d_est = est.d if est.reject else None
         np = est.np if est.reject else len(est.s)
@@ -109,18 +111,9 @@ def process_estimates(args, h0, ha, pair_dict):
                 "created_date": str(datetime.utcnow()),
                 "segments": [{'chromosome': seg.chrom, 'length': seg.length,
                               'bp_start': seg.bpStart, 'bp_end': seg.bpEnd}
-                             for seg in seg_list]}
+                             for seg in seg_list],
+                "max_model_p": est.p}
         yield line
-
-
-def print_LLs(alts):
-    print("{", end='')
-    for i in range(len(alts)):
-        alt = alts[i]
-        print("\"{}\": {:>8,.3f}".format(str(alt[0] - 1), round(alt[2], 3)), end='')
-        if i < len(alts) - 1:
-            print(",", end=' ')
-    print("}")
 
 
 def main():
@@ -136,8 +129,7 @@ def main():
     ha = Relation(args.c, args.r, args.t, args.theta, args.l,
                   args.first_deg_adj, args.nomask, args.avuncular_adj)
 
-    print("--- {} seconds ---".format(round(time() - start_time, 3)))
-    print()
+    print("--- {} seconds ---\n".format(round(time() - start_time, 3)))
 
     print("--- Solving ---")
 
@@ -164,24 +156,13 @@ def main():
               "({} pairs, {} segments)".format(args.matchfile, len(ests), total_segs))
         with DbManager(args.D, skip_soft_delete=args.skip_soft_delete) as db:
             db.insert(ests, seg_lists)
-    elif args.ofile:
+    else:
         est_stream = StreamJSON(process_estimates,
                                 args=args, h0=h0, ha=ha, pair_dict=pair_dict)
-        with open(args.ofile, 'w') as out:
-            json.dump(est_stream, out)
-    else:
-        print("{:<20} {:<20} {:<25} {:>10} {:>10} {:>10} {:>8} {:>8} {}"
-              .format("Indv_1", "Indv_2", "Rel_est1", "d_est", "N_seg", "Tot_cM", "Max-P", "NullLL", "LLs"))
-        for est, seg_list in gen_estimates(args, h0, ha, pair_dict):
-            d_est = est.d if est.reject else "NA"
-            s = est.cm
-            if est.rel_est is None:
-                rel_est = ("NA", "NA")
-            else:
-                rel_est = est.rel_est
-            print("{:<20} {:<20} {:25} {:>10} {:10} {:10,.2f} {:8,.3f} {:8,.3f}"
-                  .format(est.indv1, est.indv2, rel_est[0], d_est, len(seg_list), s, est.p, est.null_LL),
-                  end="  ")
-            print_LLs(est.alts)
+        if args.ofile:
+            with open(args.ofile) as out:
+                json.dump(est_stream, out)
+        else:
+            print(json.dumps(est_stream, indent=4))
 
     print("--- {} seconds ---".format(round(time() - start_time, 3)))
