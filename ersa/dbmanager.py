@@ -7,6 +7,7 @@
 #   All rights reserved
 #   GPL license
 
+import json
 from sqlalchemy.pool import StaticPool
 from sqlalchemy.sql import select
 from sqlalchemy import create_engine
@@ -16,7 +17,6 @@ from .dbmodels.ersa_result import Result
 from .dbmodels.ersa_segment import Segment
 from .ersa_LL import Estimate
 from .parser import SharedSegment
-import json
 
 class Database:
     """

@@ -8,9 +8,9 @@
 #   GPL license
 
 
+from ersa.ersa_LL import Background, Relation, estimate_relation
 from ersa.dbmanager import *
 from ersa.parser import get_pair_dict
-from ersa.ersa_LL import Background, Relation, estimate_relation
 
 
 def get_test_data():

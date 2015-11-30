@@ -8,8 +8,8 @@
 #   GPL license
 
 
-from ersa.parser import *
 import pytest
+from ersa.parser import *
 
 
 def test_SharedSegment():

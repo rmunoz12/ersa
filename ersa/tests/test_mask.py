@@ -7,9 +7,9 @@
 #   All rights reserved
 #   GPL license
 
+import pytest
 from ersa.mask import *
 from ersa.parser import SharedSegment
-import pytest
 
 
 def test_mask_input_segs():

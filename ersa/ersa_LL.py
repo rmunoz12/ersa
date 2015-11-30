@@ -12,9 +12,9 @@ to estimate relationships.
 
 from math import exp, log, factorial, log1p
 from operator import itemgetter
+import inflect
 from ersa.chisquare import LL_ratio_p, likelihood_ratio_CI
 from ersa.mask import total_masked
-import inflect
 
 class Background:
     """

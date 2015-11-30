@@ -7,15 +7,15 @@
 #   GPL license
 
 
-from .ersa_LL import Background, Relation, estimate_relation
-from .parser import get_pair_dict
-from time import time
 from argparse import ArgumentParser
-from .dbmanager import DbManager
-from tqdm import tqdm
 from datetime import datetime
 import json
+from time import time
+from tqdm import tqdm
+from .dbmanager import DbManager
+from .ersa_LL import Background, Relation, estimate_relation
 from .json_manager import StreamJSON
+from .parser import get_pair_dict
 
 
 def get_args():
