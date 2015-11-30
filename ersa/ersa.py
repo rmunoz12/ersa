@@ -97,7 +97,7 @@ def gen_estimates(args, h0, ha, pair_dict):
         Command line arguments. The following variables
         are used.
 
-        args.progress : bool
+        args.progress : bool | None
             If True, show the progress bar.
 
         args.dmax : int
@@ -106,7 +106,7 @@ def gen_estimates(args, h0, ha, pair_dict):
         args.alpha : float
             Significance level for likelihood ratio test.
 
-        args.ci : bool
+        args.ci : bool | None
             Controls whether confidence intervals are calculated.
 
     h0 : Background
@@ -147,14 +147,14 @@ def filter_estimates(args, g):
         Command line arguments. The following variables control
         which insignificant results are filtered out.
 
-        args.keep_insignificant :
+        args.keep_insignificant : bool | None
             If True, keep all insignificant results.
 
-        args.insig_threshold :
+        args.insig_threshold : float | None
             If not None and total cM shared is >= args.insig_threshold
             then the insignificant result is kept.
 
-        args.keep_insig_by_seg :
+        args.keep_insig_by_seg : (int, float) | None
             If not None, then the first value controls the number of
             "long" segments needed for the insignificant result to
             be kept, where "long" segments are defined by the second

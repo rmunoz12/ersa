@@ -15,7 +15,7 @@ MAINTAINER_EMAIL = "rmunoz@columbia.edu"
 DOWNLOAD_URL = 'http://github.com/rmunoz12/ersa'
 LICENSE = 'GNU General Public License v3 (GPLv3)'
 
-VERSION = '1.1.2'
+VERSION = '1.2.0'
 
 setup(name=NAME,
       version=VERSION,
@@ -33,7 +33,7 @@ setup(name=NAME,
       entry_points = {
           "console_scripts": ['ersa = ersa.ersa:main']
       },
-      install_requires=['sqlalchemy', 'inflect', 'pytest', 'scipy', 'tqdm'],
+      install_requires=['sqlalchemy', 'inflect', 'pytest', 'tqdm'],
       classifiers=['Development Status :: 4 - Beta',
                    'Intended Audience :: Science/Research',
                    'Programming Language :: Python :: 3.4',
