@@ -1,6 +1,5 @@
-scipy == 0.15.1
-setuptools == 18.3.2
+setuptools == 18.7
 inflect == 0.2.5
-pytest == 2.8.0
-SQLAlchemy == 1.0.8
+pytest == 2.8.2
+SQLAlchemy == 1.0.9
 tqdm==2.0.0

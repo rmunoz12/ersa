@@ -7,7 +7,6 @@
 #   All rights reserved
 #   GPL license
 
-from scipy.stats import chi2
 from math import exp
 
 def chi2_cdf_df2(x):

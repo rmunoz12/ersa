@@ -28,11 +28,10 @@ class Test_chisquare:
 
             LLn = log(Ln)
             LLa = log(La)
-            df = 2
             alpha = random()
 
             ratio = -2 * LLn + 2 * LLa
-            p = 1 - chi2.cdf(ratio, df)
+            p = 1 - (1 - exp(-ratio / 2))
             reject = True if p < alpha else False
             assert LL_ratio_test(LLa, LLn, alpha) == reject
 
