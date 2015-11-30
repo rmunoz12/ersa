@@ -8,6 +8,28 @@
 #   GPL license
 
 from scipy.stats import chi2
+from math import exp
+
+def chi2_cdf_df2(x):
+    """
+    Cumulative distribution function (cdf) for the chi-squared
+    distribution with two degrees of freedom.
+
+    Parameters
+    ----------
+    x : float
+        Chi-squared value.
+
+    Returns
+    -------
+    float
+        cdf value.
+
+    References
+    ----------
+    https://en.wikipedia.org/wiki/Chi-squared_distribution
+    """
+    return 1 - exp(-x / 2)
 
 
 def LL_ratio_test(LLr, LLn, alpha=0.05):
@@ -32,11 +54,11 @@ def LL_ratio_test(LLr, LLn, alpha=0.05):
     bool
         Accept (True) or reject (False) the null hypothesis.
     """
-    p = LL_ratio_p(LLr, LLn, 2)
+    p = LL_ratio_p(LLr, LLn)
     return True if p < alpha else False
 
 
-def LL_ratio_p(LLr, LLn, df=2):
+def LL_ratio_p(LLr, LLn):
     """
     Return p-value for likelihood ratio test using two degrees of
     freedom comparing LLr (alternative) and LLn (null).
@@ -55,7 +77,7 @@ def LL_ratio_p(LLr, LLn, df=2):
         p-value
     """
     ratio = -2 * LLn + 2 * LLr
-    p = 1 - chi2.cdf(ratio, df)
+    p = 1 - chi2_cdf_df2(ratio)
     return p
 
 
