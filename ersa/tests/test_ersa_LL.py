@@ -7,12 +7,11 @@
 #   All rights reserved
 #   GPL license
 
+import pytest
+from scipy.stats import poisson
 from ersa.ersa_LL import *
 from ersa.ersa_LL import _n_to_ord, _n_to_w
 from ersa.parser import get_pair_dict
-import pytest
-from math import log
-from scipy.stats import poisson
 
 class TestBackground:
     t = 1

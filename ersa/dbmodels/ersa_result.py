@@ -7,10 +7,10 @@
 #   All rights reserved
 #   GPL license
 
+from datetime import datetime
 from sqlalchemy import Column, Integer, \
     String, Float, Boolean, DateTime, BigInteger
 from sqlalchemy.orm import relationship
-from datetime import datetime
 from .base import Base
 
 class Result(Base):

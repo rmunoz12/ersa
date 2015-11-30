@@ -3,3 +3,4 @@ setuptools == 18.3.2
 inflect == 0.2.5
 pytest == 2.8.0
 SQLAlchemy == 1.0.8
+tqdm==2.0.0

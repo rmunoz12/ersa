@@ -7,10 +7,9 @@
 #   All rights reserved
 #   GPL license
 
-from ersa.chisquare import *
-from scipy.stats import chi2
-from random import random, randint
 from math import log
+from random import random, randint
+from ersa.chisquare import *
 
 class Test_chisquare:
 

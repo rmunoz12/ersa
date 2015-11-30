@@ -7,8 +7,8 @@
 #   All rights reserved
 #   GPL license
 
-from ersa.mask import mask_input_segs
 from sys import maxsize
+from ersa.mask import mask_input_segs
 
 
 class SharedSegment:
