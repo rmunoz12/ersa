@@ -55,15 +55,16 @@ def read_matchfile(path, haploscores=False):
     Parameters
     ----------
     path : str
+        File path to matchfile.
 
     haploscores : bool
         True if the input matchfile contains haploscores in an
         extra column at the end of each line. These scores
         are discarded.
 
-    Returns
+    Yields
     -------
-    segment : generator[SharedSegment]
+    segment : SharedSegment
     """
     with open(path) as matchfile:
         for line in matchfile:
@@ -79,16 +80,16 @@ def merge_segments(segs, merge_len):
     Parameters
     ----------
     segs : list[SharedSegment]
-        original input SharedSegments
+        Original input SharedSegments.
 
-    merge_len
-        maximum base pair between segments on
-        the same chromosome that should be merged
+    merge_len : int
+        Maximum base pair between segments on
+        the same chromosome that should be merged.
 
     Returns
     -------
     new_segs : list[SharedSegment]
-        modified segs with close segments merged
+        Modified segs with close segments merged.
     """
     assert merge_len < maxsize
     s_by_chrom = {}
@@ -136,12 +137,13 @@ def get_pair_dict(path, t, user=None, haploscores=False, nomask=False, merge_len
     Parameters
     ----------
     path : str
+        File path to read from.
 
     t : float
-        Filter out results less than t (in cM)
+        Filter out results less than t (in cM).
 
     user : str | None
-        filter input by user identification
+        Filter input by user identification.
 
     haploscores : bool
         True if the input matchfile contains haploscores in an
@@ -149,7 +151,7 @@ def get_pair_dict(path, t, user=None, haploscores=False, nomask=False, merge_len
 
     nomask : bool
         Use to enable/disable masking of likely
-        false positive Germline regions
+        false positive Germline regions.
 
     merge_len : int
         If merge > 0, then call merging subroutine to
@@ -158,9 +160,9 @@ def get_pair_dict(path, t, user=None, haploscores=False, nomask=False, merge_len
 
     Returns
     -------
-    pair_dict: dict[str: list[SharedSegments]]
+    pair_dict: dict[str, list[SharedSegments]]
         Each list of SharedSegments is sorted for processing by
-        ersa_LL.estimate_relation()
+        ersa_LL.estimate_relation().
     """
     s_list = read_matchfile(path, haploscores)
     pair_dict = {}

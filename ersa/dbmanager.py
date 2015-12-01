@@ -28,10 +28,10 @@ class Database:
     Parameters
     ----------
     path : str
-        Path to database
+        Path to database.
 
     shared_pool : bool
-        Uses a SharedPool if true, otherwise a StaticPool
+        Uses a SharedPool if true, otherwise a StaticPool.
 
     skip_soft_delete : bool
         Don't soft delete previous records for a pair_id that
@@ -65,7 +65,12 @@ class Database:
         ----------
         pairs : list[str]
             List of pairs, with each individual's id separated
-            by ":"
+            by ":".
+
+        Returns
+        -------
+        n : int
+            Number of results deleted.
         """
         keys = []
         for p in pairs:
@@ -142,6 +147,12 @@ class Database:
         Physically deletes any results that have previously
         been soft deleted. Corresponding segments
         are also removed.
+
+        Returns
+        -------
+        n_deleted : dict[str, int]
+            Dictionary containing the number of results and segments
+            deleted. Keys are 'r' and 's', respectively.
         """
         s = select([Result.__table__]). \
             where(Result.__table__.c.deleted)
@@ -188,10 +199,10 @@ class DbManager:
     Parameters
     ----------
     path : str
-        path to the database
+        Path to the database.
 
     shared_pool : bool
-        Uses a SharedPool if true, otherwise a StaticPool
+        Uses a SharedPool if true, otherwise a StaticPool.
 
     skip_soft_delete : bool
         Don't soft delete previous records for a pair_id that
